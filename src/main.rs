@@ -26,6 +26,7 @@ async fn main() -> Result<(), Error> {
 }
 
 async fn launch_ws() ->  Result<(), Error> {
+    //TODO handle Ctrl-C command
     println!("Start Ws ...");
     let state = PeerMap::new(Mutex::new(HashMap::new()));
 
