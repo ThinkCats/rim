@@ -20,10 +20,12 @@ type PeerMap = Arc<Mutex<HashMap<SocketAddr, Sender>>>;
 #[tokio::main]
 async fn main() -> Result<(), Error> {
 
-    println!("Start Web ...");
+    let _r = tokio::join!(launch_web(),launch_ws());
 
-    tokio::spawn(launch_web());
+    Ok(())
+}
 
+async fn launch_ws() ->  Result<(), Error> {
     println!("Start Ws ...");
     let state = PeerMap::new(Mutex::new(HashMap::new()));
 
