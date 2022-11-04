@@ -1,6 +1,6 @@
 use std::{
     collections::HashMap,
-    env, io,
+    env, io::Error,
     net::SocketAddr,
     sync::{Arc, Mutex},
 };
@@ -15,10 +15,16 @@ use tokio_tungstenite::{accept_async, tungstenite::Message};
 type Sender = UnboundedSender<Message>;
 type PeerMap = Arc<Mutex<HashMap<SocketAddr, Sender>>>;
 
-#[tokio::main]
-async fn main() -> Result<(), io::Error> {
-    println!("Start Ws ...");
+#[macro_use] extern crate rocket;
 
+#[tokio::main]
+async fn main() -> Result<(), Error> {
+
+    println!("Start Web ...");
+
+    tokio::spawn(launch_web());
+
+    println!("Start Ws ...");
     let state = PeerMap::new(Mutex::new(HashMap::new()));
 
     let addr = env::args()
@@ -32,6 +38,21 @@ async fn main() -> Result<(), io::Error> {
     }
 
     Ok(())
+}
+
+
+async fn launch_web() -> Result<(), rocket::Error> {
+    let _rocket = rocket::build()
+        .mount("/", routes![index])
+        .launch()
+        .await?;
+
+    Ok(())
+}
+
+#[get("/")]
+fn index() -> &'static str {
+    "hello world"
 }
 
 async fn handle_connection(state: PeerMap, raw_stream: TcpStream, addr: SocketAddr) {
