@@ -9,6 +9,7 @@ use futures::{
     channel::mpsc::{unbounded, UnboundedSender},
     future, pin_mut, StreamExt, TryStreamExt,
 };
+use rim::store::query_group;
 use tokio::net::{TcpListener, TcpStream};
 use tokio_tungstenite::{accept_async, tungstenite::Message};
 
@@ -46,7 +47,7 @@ async fn launch_ws() ->  Result<(), Error> {
 
 async fn launch_web() -> Result<(), rocket::Error> {
     let _rocket = rocket::build()
-        .mount("/", routes![index])
+        .mount("/", routes![index, hello])
         .launch()
         .await?;
 
@@ -56,6 +57,12 @@ async fn launch_web() -> Result<(), rocket::Error> {
 #[get("/")]
 fn index() -> &'static str {
     "hello world"
+}
+
+#[get("/hello")]
+fn hello() -> &'static str {
+    query_group(1_u32);
+    "query ok"
 }
 
 async fn handle_connection(state: PeerMap, raw_stream: TcpStream, addr: SocketAddr) {
