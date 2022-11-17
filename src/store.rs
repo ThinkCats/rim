@@ -11,7 +11,7 @@ lazy_static! {
 
 type GroupRow = (u64,String,String,u8);
 
-pub fn query_group(id: u32) {
+pub fn query_group(id: u64) {
     let sql = format!( "select id,name,avatar,type from `groups` where id = {}",id); 
     println!("SQL:{}",sql);
     let mut conn = DB_POOL.lock().unwrap().get_conn().unwrap();
