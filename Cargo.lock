@@ -1622,6 +1622,7 @@ name = "rim"
 version = "0.1.0"
 dependencies = [
  "futures",
+ "lazy_static",
  "mysql",
  "rocket",
  "tokio",

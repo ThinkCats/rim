@@ -18,7 +18,7 @@ fn index() -> &'static str {
     "hello world"
 }
 
-#[get("/hello")]
+#[get("/user/get")]
 fn hello() -> &'static str {
     query_group(1_u32);
     "query ok"

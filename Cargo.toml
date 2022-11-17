@@ -10,3 +10,4 @@ tokio = { version = "1.21.2", features = ["full"] }
 futures = "0.3"
 rocket = "0.5.0-rc.2"
 mysql = "22.2.0"
+lazy_static = "1.4.0"
