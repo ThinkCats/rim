@@ -26,10 +26,21 @@ pub fn fail<T>(msg: String) -> Response<T> {
     }
 }
 
-pub fn json_ok<T>(t: T) -> Json<Response<T>> {
+pub fn response<T>(data: Option<T>, fail_msg: String) -> WebResponse<T> {
+    match data {
+        Some(d) => {
+            return json_ok(d);
+        }
+        None => {
+            return json_fail(fail_msg);
+        }
+    }
+}
+
+pub fn json_ok<T>(t: T) -> WebResponse<T> {
     Json(ok(t))
 }
 
-pub fn json_fail<T>(msg: String) -> Json<Response<T>> {
+pub fn json_fail<T>(msg: String) -> WebResponse<T> {
     Json(fail(msg))
 }

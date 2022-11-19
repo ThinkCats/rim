@@ -1,7 +1,7 @@
-use rocket::{get, routes, serde::json::Json};
+use rocket::{get, routes};
 
 use crate::{
-    resp::{json_fail, json_ok, Response, WebResponse},
+    resp::{response, WebResponse},
     store::query_group,
     user::{query_user, User},
 };
@@ -24,12 +24,5 @@ fn index() -> &'static str {
 fn hello(uid: u64) -> WebResponse<User> {
     query_group(uid);
     let user = query_user(uid);
-    match user {
-        Some(u) => {
-            return json_ok(u);
-        }
-        None => {
-            return json_fail("User Not Found".into());
-        }
-    }
+    response(user, "user not found".into())
 }
