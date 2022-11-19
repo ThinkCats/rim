@@ -9,7 +9,8 @@ use crate::{
 
 pub async fn launch_web() -> Result<(), rocket::Error> {
     let _rocket = rocket::build()
-        .mount("/", routes![index, user_get, user_create])
+        .mount("/", routes![index])
+        .mount("/user", routes![user_get, user_create])
         .register("/", catchers![not_found, server_error])
         .launch()
         .await?;
@@ -22,14 +23,14 @@ fn index() -> &'static str {
     "hello world"
 }
 
-#[get("/user/get?<uid>")]
+#[get("/get?<uid>")]
 fn user_get(uid: u64) -> WebResponse<User> {
     query_group(uid);
     let user = query_user(uid);
     response(user, "user not found".into())
 }
 
-#[post("/user/create", data = "<user>")]
+#[post("/create", data = "<user>")]
 fn user_create(user: Json<User>) -> WebResponse<u64> {
     let result = create_user(&user);
     wrap_result(result)
