@@ -1,7 +1,7 @@
-use rocket::{get, routes};
+use rocket::{get, routes, catchers, catch};
 
 use crate::{
-    resp::{response, WebResponse},
+    resp::{response, WebResponse, json_fail},
     store::query_group,
     user::{query_user, User},
 };
@@ -9,6 +9,7 @@ use crate::{
 pub async fn launch_web() -> Result<(), rocket::Error> {
     let _rocket = rocket::build()
         .mount("/", routes![index, hello])
+        .register("/", catchers![not_found])
         .launch()
         .await?;
 
@@ -25,4 +26,9 @@ fn hello(uid: u64) -> WebResponse<User> {
     query_group(uid);
     let user = query_user(uid);
     response(user, "user not found".into())
+}
+
+#[catch(404)]
+fn not_found() -> WebResponse<String> {
+    json_fail("invalid request".into())
 }
