@@ -1,6 +1,10 @@
 use rocket::{get, routes, serde::json::Json};
 
-use crate::{store::query_group, user::{query_user, User, Response, ok, fail}};
+use crate::{
+    resp::{json_fail, json_ok, Response, WebResponse},
+    store::query_group,
+    user::{query_user, User},
+};
 
 pub async fn launch_web() -> Result<(), rocket::Error> {
     let _rocket = rocket::build()
@@ -17,15 +21,15 @@ fn index() -> &'static str {
 }
 
 #[get("/user/get?<uid>")]
-fn hello(uid: u64) -> Json<Response<User>> {
+fn hello(uid: u64) -> WebResponse<User> {
     query_group(uid);
     let user = query_user(uid);
     match user {
         Some(u) => {
-            return Json(ok(u));
+            return json_ok(u);
         }
         None => {
-            return Json(fail("User Not Found".into())) ;
+            return json_fail("User Not Found".into());
         }
     }
 }
