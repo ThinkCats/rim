@@ -1,3 +1,4 @@
+use anyhow::{Result, bail, Ok};
 use mysql::{prelude::Queryable, PooledConn};
 
 use serde::{Deserialize, Serialize};
@@ -41,20 +42,33 @@ pub fn query_user(uid: u64) -> Option<User> {
     Some(user)
 }
 
-pub fn create_user(user: &User) {
+pub fn create_user(user: &User) -> Result<u64> {
+    if has_account(&user.account) {
+        bail!("Account Existed")
+    }
+
     let sql = r"insert into `user`(name, avatar,email,account, password) value(?,?,?,?,?)";
     let mut conn = get_conn();
-    conn.exec_drop(
-        sql,
-        (
-            &user.name,
-            &user.avatar,
-            &user.email,
-            &user.account,
-            &user.password,
-        ),
-    )
-    .unwrap();
+    let r:Vec<u64> = conn.exec(
+            sql,
+            (
+                &user.name,
+                &user.avatar,
+                &user.email,
+                &user.account,
+                &user.password,
+            ),
+        )
+        .unwrap();
+    println!("Execute Result:{:?}",r);
+    Ok(22)
+}
+
+fn has_account(account: &String) -> bool {
+    let sql = format!("select id from `user` where account = '{}'",account);
+    println!("Sql:{}",sql);
+    let result:Vec<u64> = get_conn().query(sql).unwrap();
+    !result.is_empty()
 }
 
 fn get_conn() -> PooledConn {

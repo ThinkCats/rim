@@ -29,9 +29,12 @@ fn user_get(uid: u64) -> WebResponse<User> {
 }
 
 #[post("/user/create", data = "<user>")]
-fn user_create(user: Json<User>) -> WebResponse<bool> {
-    create_user(&user);
-    response(Some(true), "fail".into())
+fn user_create(user: Json<User>) -> WebResponse<u64> {
+    let result = create_user(&user);
+    match result {
+        Ok(data) => response(Some(data), "fail".into()),
+        Err(msg) => response(None, msg.to_string()),
+    }
 }
 
 #[catch(404)]
