@@ -1,3 +1,4 @@
+use anyhow::Result;
 use rocket::{catch, catchers, get, post, routes, serde::json::Json};
 
 use crate::{
@@ -31,11 +32,16 @@ fn user_get(uid: u64) -> WebResponse<User> {
 #[post("/user/create", data = "<user>")]
 fn user_create(user: Json<User>) -> WebResponse<u64> {
     let result = create_user(&user);
+    wrap_result(result)
+}
+
+fn wrap_result<T>(result: Result<T>) -> WebResponse<T> {
     match result {
         Ok(data) => response(Some(data), "fail".into()),
         Err(msg) => response(None, msg.to_string()),
-    }
+    } 
 }
+
 
 #[catch(404)]
 fn not_found() -> WebResponse<String> {
