@@ -9,7 +9,7 @@ use crate::{
 pub async fn launch_web() -> Result<(), rocket::Error> {
     let _rocket = rocket::build()
         .mount("/", routes![index, user_get, user_create])
-        .register("/", catchers![not_found])
+        .register("/", catchers![not_found, server_error])
         .launch()
         .await?;
 
@@ -37,4 +37,9 @@ fn user_create(user: Json<User>) -> WebResponse<bool> {
 #[catch(404)]
 fn not_found() -> WebResponse<String> {
     json_fail("invalid request".into())
+}
+
+#[catch(500)]
+fn server_error() -> WebResponse<String> {
+    json_fail("system error".into())
 }
