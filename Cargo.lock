@@ -1632,6 +1632,7 @@ dependencies = [
  "lazy_static",
  "mysql",
  "rocket",
+ "serde",
  "tokio",
  "tokio-tungstenite",
 ]

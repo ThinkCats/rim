@@ -12,3 +12,4 @@ rocket = {version = "0.5.0-rc.2",features = ["json"]}
 mysql = "22.2.0"
 lazy_static = "1.4.0"
 anyhow = "1.0.53"
+serde = { version = "1.0", features = ["derive"] }

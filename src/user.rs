@@ -1,14 +1,13 @@
-use mysql::prelude::Queryable;
+use mysql::{prelude::Queryable, PooledConn};
 
-use rocket::serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::store::DB_POOL;
 
-
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
 pub struct User {
-    pub id: u64,
+    pub id: Option<u64>,
     pub name: String,
     pub avatar: String,
     pub email: String,
@@ -24,7 +23,7 @@ pub fn query_user(uid: u64) -> Option<User> {
         uid
     );
     println!("SQL:{}", sql);
-    let mut conn = DB_POOL.lock().unwrap().get_conn().unwrap();
+    let mut conn = get_conn();
     let result: Vec<UserRow> = conn.query(sql).unwrap();
     println!("result:{:?}", result);
     if result.is_empty() {
@@ -32,7 +31,7 @@ pub fn query_user(uid: u64) -> Option<User> {
     }
     let r = result.get(0).unwrap();
     let user = User {
-        id: r.0,
+        id: Some(r.0),
         name: r.1.clone(),
         avatar: r.2.clone(),
         email: r.3.clone(),
@@ -42,4 +41,22 @@ pub fn query_user(uid: u64) -> Option<User> {
     Some(user)
 }
 
-pub fn create_user(user: &User) {}
+pub fn create_user(user: &User) {
+    let sql = r"insert into `user`(name, avatar,email,account, password) value(?,?,?,?,?)";
+    let mut conn = get_conn();
+    conn.exec_drop(
+        sql,
+        (
+            &user.name,
+            &user.avatar,
+            &user.email,
+            &user.account,
+            &user.password,
+        ),
+    )
+    .unwrap();
+}
+
+fn get_conn() -> PooledConn {
+    DB_POOL.lock().unwrap().get_conn().unwrap()
+}
