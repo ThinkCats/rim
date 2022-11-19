@@ -3,3 +3,4 @@ pub mod route;
 pub mod ws;
 pub mod user;
 pub mod resp;
+pub mod group;
