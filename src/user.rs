@@ -1,9 +1,9 @@
 use anyhow::{Result, bail, Ok};
-use mysql::{prelude::Queryable, PooledConn};
+use mysql::prelude::Queryable;
 
 use serde::{Deserialize, Serialize};
 
-use crate::store::DB_POOL;
+use crate::store::get_conn;
 
 #[derive(Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
@@ -49,7 +49,7 @@ pub fn create_user(user: &User) -> Result<u64> {
 
     let sql = r"insert into `user`(name, avatar,email,account, password) value(?,?,?,?,?)";
     let mut conn = get_conn();
-    let r:Vec<u64> = conn.exec(
+    let _:Vec<u64> = conn.exec(
             sql,
             (
                 &user.name,
@@ -60,8 +60,8 @@ pub fn create_user(user: &User) -> Result<u64> {
             ),
         )
         .unwrap();
-    println!("Execute Result:{:?}",r);
-    Ok(22)
+    println!("Execute Result:{:?}",conn.last_insert_id());
+    Ok(conn.last_insert_id())
 }
 
 fn has_account(account: &String) -> bool {
@@ -71,6 +71,3 @@ fn has_account(account: &String) -> bool {
     !result.is_empty()
 }
 
-fn get_conn() -> PooledConn {
-    DB_POOL.lock().unwrap().get_conn().unwrap()
-}
