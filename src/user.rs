@@ -11,9 +11,9 @@ pub struct User {
     pub id: Option<u64>,
     pub name: String,
     pub avatar: String,
-    pub email: String,
+    pub email: Option<String>,
     pub account: String,
-    pub password: String,
+    pub password: Option<String>,
 }
 
 type UserRow = (u64, String, String, String, String);
@@ -35,9 +35,9 @@ pub fn query_user(uid: u64) -> Option<User> {
         id: Some(r.0),
         name: r.1.clone(),
         avatar: r.2.clone(),
-        email: r.3.clone(),
+        email: Some(r.3.clone()),
         account: r.4.clone(),
-        password: String::from(""),
+        password: Some(String::from("")),
     };
     Some(user)
 }

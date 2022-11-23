@@ -11,4 +11,3 @@ lazy_static! {
 pub fn get_conn() -> PooledConn {
     DB_POOL.lock().unwrap().get_conn().unwrap()
 }
-
