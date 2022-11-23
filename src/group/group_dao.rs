@@ -39,7 +39,6 @@ pub fn insert_group(form: &GroupCreateForm) -> Result<u64> {
 }
 
 type GroupRow = (u64, String, String, u8, u64);
-
 pub fn select_group(uid: u64) -> Result<Vec<Group>> {
     let sql = format!(
         "select id,name,avatar,mode,creator_uid from `groups` where id in
@@ -48,7 +47,6 @@ pub fn select_group(uid: u64) -> Result<Vec<Group>> {
     );
     let mut conn = get_conn();
     let result: Vec<GroupRow> = conn.query(sql).expect("query data error");
-    println!("result:{:?}", result);
 
     let d = result
         .iter()
@@ -65,17 +63,15 @@ pub fn select_group(uid: u64) -> Result<Vec<Group>> {
 }
 
 type GroupUserRow = (u64, u64, u8);
-pub fn query_group_user(gid: u64) -> Result<Option<Vec<GroupUser>>> {
+pub fn select_group_user(gid: u64) -> Vec<GroupUser> {
     let sql = format!("select g_id,u_id,role from group_user where g_id = {}", gid);
     let result: Vec<GroupUserRow> = get_conn().query(sql).expect("query data error");
-    if result.is_empty() {
-        return Ok(None);
-    }
-
-    let group_users: Vec<GroupUser>;
-    for ele in result {
-        //TODO Query User
-        // group_users.push(value);
-    }
-    Ok(None)
+    result
+        .iter()
+        .map(|r| GroupUser {
+            gid: r.0,
+            uid: r.1,
+            role: r.2,
+        })
+        .collect::<Vec<GroupUser>>()
 }
