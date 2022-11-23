@@ -1,42 +1,11 @@
 use anyhow::{Ok, Result};
 use mysql::{params, prelude::Queryable, TxOpts};
-use serde::{Deserialize, Serialize};
 
-use crate::{store::get_conn, user::User};
+use crate::common::store::get_conn;
 
-#[derive(Serialize, Deserialize)]
-#[serde(crate = "rocket::serde")]
-pub struct GroupCreateForm {
-    pub group: Group,
-    pub users: Vec<GroupUserForm>,
-}
+use super::group_model::{Group, GroupCreateForm, GroupUser};
 
-#[derive(Serialize, Deserialize)]
-#[serde(crate = "rocket::serde")]
-pub struct Group {
-    pub id: Option<u64>,
-    pub name: String,
-    pub avatar: String,
-    pub mode: u8,
-    #[serde(rename(serialize = "creatorUid", deserialize = "creatorUid"))]
-    pub creator_uid: u64,
-}
-
-#[derive(Serialize, Deserialize)]
-#[serde(crate = "rocket::serde")]
-pub struct GroupUserForm {
-    pub uid: u64,
-    pub role: u8,
-}
-
-#[derive(Serialize, Deserialize)]
-#[serde(crate = "rocket::serde")]
-pub struct GroupUser {
-    pub role: u8,
-    pub user: User,
-}
-
-pub fn create_group(form: &GroupCreateForm) -> Result<u64> {
+pub fn insert_group(form: &GroupCreateForm) -> Result<u64> {
     let mut conn = get_conn();
     let mut tx = conn.start_transaction(TxOpts::default()).unwrap();
     let group_sql = "insert into `groups`(name, avatar,mode,creator_uid) value (?,?,?,?)";
@@ -71,9 +40,9 @@ pub fn create_group(form: &GroupCreateForm) -> Result<u64> {
 
 type GroupRow = (u64, String, String, u8, u64);
 
-pub fn query_group(uid: u64) -> Result<Vec<Group>> {
+pub fn select_group(uid: u64) -> Result<Vec<Group>> {
     let sql = format!(
-        "select id,name,avatar,mode,creator_uid from `groups` where id =
+        "select id,name,avatar,mode,creator_uid from `groups` where id in
          (select g_id from group_user where u_id = {})",
         uid
     );
@@ -103,7 +72,7 @@ pub fn query_group_user(gid: u64) -> Result<Option<Vec<GroupUser>>> {
         return Ok(None);
     }
 
-    let group_users:Vec<GroupUser>;
+    let group_users: Vec<GroupUser>;
     for ele in result {
         //TODO Query User
         // group_users.push(value);

@@ -1,3 +1,4 @@
+use anyhow::Result;
 use rocket::{
     serde::{json::Json, Serialize},
 };
@@ -25,6 +26,13 @@ pub fn fail<T>(msg: String) -> Response<T> {
         ok: false,
         msg: Some(msg),
         data: None,
+    }
+}
+
+pub fn wrap_result<T>(result: Result<T>) -> WebResponse<T> {
+    match result {
+        Ok(data) => response(Some(data), "fail".into()),
+        Err(msg) => response(None, msg.to_string()),
     }
 }
 

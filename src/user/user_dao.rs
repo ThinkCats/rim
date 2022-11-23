@@ -1,24 +1,13 @@
-use anyhow::{Result, bail, Ok};
+use anyhow::{Ok, Result};
 use mysql::prelude::Queryable;
 
-use serde::{Deserialize, Serialize};
+use crate::common::store::get_conn;
 
-use crate::store::get_conn;
-
-#[derive(Serialize, Deserialize)]
-#[serde(crate = "rocket::serde")]
-pub struct User {
-    pub id: Option<u64>,
-    pub name: String,
-    pub avatar: String,
-    pub email: Option<String>,
-    pub account: String,
-    pub password: Option<String>,
-}
+use super::user_model::User;
 
 type UserRow = (u64, String, String, String, String);
 
-pub fn query_user(uid: u64) -> Option<User> {
+pub fn select_user(uid: u64) -> Option<User> {
     let sql = format!(
         "select id,name,avatar,email,account from `user` where id = {}",
         uid
@@ -42,14 +31,11 @@ pub fn query_user(uid: u64) -> Option<User> {
     Some(user)
 }
 
-pub fn create_user(user: &User) -> Result<u64> {
-    if has_account(&user.account) {
-        bail!("Account Existed")
-    }
-
+pub fn insert_user(user: &User) -> Result<u64> {
     let sql = r"insert into `user`(name, avatar,email,account, password) value(?,?,?,?,?)";
     let mut conn = get_conn();
-    let _:Vec<u64> = conn.exec(
+    let _: Vec<u64> = conn
+        .exec(
             sql,
             (
                 &user.name,
@@ -60,14 +46,11 @@ pub fn create_user(user: &User) -> Result<u64> {
             ),
         )
         .unwrap();
-    println!("Execute Result:{:?}",conn.last_insert_id());
     Ok(conn.last_insert_id())
 }
 
-fn has_account(account: &String) -> bool {
-    let sql = format!("select id from `user` where account = '{}'",account);
-    println!("Sql:{}",sql);
-    let result:Vec<u64> = get_conn().query(sql).unwrap();
+pub fn has_account(account: &String) -> bool {
+    let sql = format!("select id from `user` where account = '{}'", account);
+    let result: Vec<u64> = get_conn().query(sql).unwrap();
     !result.is_empty()
 }
-

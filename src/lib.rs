@@ -1,6 +1,5 @@
-pub mod store;
-pub mod route;
-pub mod ws;
-pub mod user;
-pub mod resp;
+pub mod common;
 pub mod group;
+pub mod route;
+pub mod user;
+pub mod ws;
