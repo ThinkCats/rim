@@ -39,5 +39,5 @@ pub struct GroupUser {
 #[serde(crate = "rocket::serde")]
 pub struct GroupUserDTS {
     pub role: u8,
-    pub users: Vec<User>,
+    pub user: User,
 }

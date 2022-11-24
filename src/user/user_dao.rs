@@ -7,10 +7,11 @@ use super::user_model::User;
 
 type UserRow = (u64, String, String, String, String);
 
-pub fn select_user(uid: u64) -> Option<User> {
+pub fn select_user(uids: Vec<u64>) -> Option<Vec<User>> {
+    let uids_join = uids.iter().map(|r| r.to_string()).collect::<Vec<String>>().join(",");
     let sql = format!(
-        "select id,name,avatar,email,account from `user` where id = {}",
-        uid
+        "select id,name,avatar,email,account from `user` where id in ( {} )",
+        uids_join
     );
     println!("SQL:{}", sql);
     let mut conn = get_conn();
@@ -19,16 +20,17 @@ pub fn select_user(uid: u64) -> Option<User> {
     if result.is_empty() {
         return None;
     }
-    let r = result.get(0).unwrap();
-    let user = User {
-        id: Some(r.0),
-        name: r.1.clone(),
-        avatar: r.2.clone(),
-        email: Some(r.3.clone()),
-        account: r.4.clone(),
-        password: Some(String::from("")),
-    };
-    Some(user)
+
+    let d = result.iter().map(|r|  User {
+            id: Some(r.0),
+            name: r.1.clone(),
+            avatar: r.2.clone(),
+            email: Some(r.3.clone()),
+            account: r.4.clone(),
+            password: Some(String::from("")),
+        }).collect::<Vec<User>>();
+
+    Some(d)
 }
 
 pub fn insert_user(user: &User) -> Result<u64> {
