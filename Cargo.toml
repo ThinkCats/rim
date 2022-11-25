@@ -13,3 +13,5 @@ mysql = "22.2.0"
 lazy_static = "1.4.0"
 anyhow = "1.0.53"
 serde = { version = "1.0", features = ["derive"] }
+chrono = { version = "0.4", features = ["unstable-locales"] }
+uuid = {version = "1.2.2",features = [ "v4"]}

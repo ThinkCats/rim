@@ -1,6 +1,7 @@
 use anyhow::Result;
 
-use crate::user::user_dao::select_user;
+
+use crate::user::user_dao::select_user_by_uids;
 
 use super::{
     group_dao::{insert_group, select_group, select_group_user},
@@ -22,7 +23,7 @@ pub fn query_group_user(gid: u64) -> Result<Vec<GroupUserDTS>> {
     }
 
     let uids = group_users.iter().map(|d| d.uid).collect::<Vec<u64>>();
-    let users = select_user(uids);
+    let users = select_user_by_uids(uids);
     if users.is_none() {
         return Ok(Vec::new());
     }
