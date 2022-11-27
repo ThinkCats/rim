@@ -75,7 +75,6 @@ fn create_token(uid: u64) -> String {
         }
         None => {
             let token = Uuid::new_v4().to_string();
-            //TODO expire time process
             let expire_time = calc_token_expire_time();
             let user_token = UserToken::init(uid, token.clone(), expire_time);
             let _ = insert_token(&user_token);
