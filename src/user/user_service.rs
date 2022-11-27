@@ -1,9 +1,13 @@
 use anyhow::{bail, Ok, Result};
+use chrono::{Duration, Local, NaiveDateTime};
 use uuid::Uuid;
+
+use crate::user::user_dao::update_token;
 
 use super::{
     user_dao::{
         has_account, insert_token, insert_user, select_user_by_account, select_user_by_uids,
+        select_user_token,
     },
     user_model::{User, UserLoginForm, UserToken},
 };
@@ -44,10 +48,46 @@ pub fn login(login_form: &UserLoginForm) -> Result<String> {
 
 fn create_token(uid: u64) -> String {
     //TODO check user token existed
-    let token = Uuid::new_v4().to_string();
-    //TODO expire time process
-    let expire_time = "2022-11-28 00:00:03".into();
-    let user_token = UserToken::init(uid, token.clone(), expire_time);
-    let _ = insert_token(&user_token);
-    token
+    let user_token = select_user_token(uid);
+    match user_token {
+        Some(u) => {
+            let expire_time = u.expire_time;
+            let expire =
+                NaiveDateTime::parse_from_str(expire_time.as_str(), "%Y-%m-%d %H:%M:%S").unwrap();
+            println!("{}", expire);
+            let now_local = Local::now();
+            let now = NaiveDateTime::new(now_local.date_naive(), now_local.time());
+            let valid_expire_time = now.timestamp_millis() < expire.timestamp_millis();
+            if valid_expire_time {
+                return u.token;
+            }
+            //update token
+            let token = Uuid::new_v4().to_string();
+            let expire_time = calc_token_expire_time();
+            let user_token = UserToken {
+                id: u.id,
+                u_id: u.u_id,
+                token: token.clone(),
+                expire_time,
+            };
+            let _ = update_token(&user_token);
+            token
+        }
+        None => {
+            let token = Uuid::new_v4().to_string();
+            //TODO expire time process
+            let expire_time = calc_token_expire_time();
+            let user_token = UserToken::init(uid, token.clone(), expire_time);
+            let _ = insert_token(&user_token);
+            token
+        }
+    }
+}
+
+fn calc_token_expire_time() -> String {
+    Local::now()
+        .checked_add_signed(Duration::days(1))
+        .unwrap()
+        .format("%Y-%m-%d %H:%M:%S")
+        .to_string()
 }

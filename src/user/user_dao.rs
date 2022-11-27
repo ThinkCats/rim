@@ -77,10 +77,27 @@ pub fn has_account(account: &String) -> bool {
     !result.is_empty()
 }
 
-// pub fn select_user_token(uid: u64) -> Option<UserToken> {
-//     let sql = format!("select id from `user` where account = '{}'", account);
-   
-// }
+type UserTokenRow = (u64, u64, String, String);
+pub fn select_user_token(uid: u64) -> Option<UserToken> {
+    let sql = format!(
+        "select id,u_id,token,expire_time from `user_token` where u_id= '{}'",
+        uid
+    );
+    let result: Vec<UserTokenRow> = get_conn().query(sql).expect("query token error");
+    if result.is_empty() {
+        return None;
+    }
+    let d = result
+        .iter()
+        .map(|r| UserToken {
+            id: Some(r.0),
+            u_id: r.1,
+            token: r.2.clone(),
+            expire_time: r.3.clone(),
+        })
+        .collect::<Vec<UserToken>>();
+    Some(d[0].clone())
+}
 
 pub fn insert_token(token: &UserToken) -> Result<u64> {
     let sql = r"insert into user_token(u_id,token,expire_time) value(?,?,?)";
@@ -90,3 +107,14 @@ pub fn insert_token(token: &UserToken) -> Result<u64> {
         .expect("save token error");
     Ok(conn.last_insert_id())
 }
+
+pub fn update_token(token: &UserToken) -> Result<u64> {
+    let sql = r"update user_token set token = ?, expire_time = ? where id = ?";
+    let mut conn = get_conn();
+    let _: Vec<u64> = conn
+        .exec(sql, (&token.token, &token.expire_time, &token.id.unwrap()))
+        .expect("save token error");
+    Ok(conn.last_insert_id())
+}
+
+
