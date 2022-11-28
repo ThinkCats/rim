@@ -46,22 +46,31 @@ fn check_header_token(req: &mut Request) {
     if url_path == "/user/login" {
         return;
     }
-    let token = req.headers().get_one("token");
-    let valid_token = token.is_some() && valid_token(token.unwrap().into());
-    if !valid_token {
+    let auth_token = req.headers().get_one("Authorization");
+    if auth_token.is_none() {
         req.set_uri(Origin::parse("/login/need").unwrap());
+        return;
     }
 
-    // match token {
-    //     Some(t) => {
-    //         println!("TODO handle token:{}", t);
-    //     }
-    //     None => {
-    //         println!("redirect to login for none token");
-    //         &req.set_uri(Origin::parse("/user/login").unwrap());
-    //         // let _ = Redirect::to(uri!("/user/login"));
-    //     }
-    // }
+    let bare_token = auth_token.unwrap().to_string();
+    let token = get_bare_token(bare_token);
+    if token.is_none() {
+        req.set_uri(Origin::parse("/login/need").unwrap());
+        return;
+    }
+    let token_str = token.unwrap();
+    if !valid_token(token_str) {
+        req.set_uri(Origin::parse("/login/need").unwrap());
+    }
+}
+
+fn get_bare_token(bare_token: String) -> Option<String> {
+    let split: Vec<&str> = bare_token.split(" ").collect();
+    if split.is_empty() || split.len() != 2 {
+        return None;
+    }
+    let token = split[1];
+    return Some(token.into());
 }
 
 #[catch(404)]
