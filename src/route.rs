@@ -4,7 +4,7 @@ use rocket::{catch, catchers, fairing::AdHoc, get, http::uri::Origin, routes, Re
 use crate::{
     common::{
         resp::{json_fail, response, WebResponse},
-        store::{ThreadLocalStore, THREAD_LOCAL},
+        store::add_local_store,
     },
     group::group_router::{group_create, group_get, group_user_get},
     user::{
@@ -68,13 +68,7 @@ fn check_header_token(req: &mut Request) {
         return;
     }
     //Store login info
-    THREAD_LOCAL.with(|r| {
-        let mut d = r.borrow_mut();
-        d.push(ThreadLocalStore {
-            token: token_str.clone(),
-            uid: valid_result.1.unwrap(),
-        });
-    });
+    add_local_store(token_str.clone(), valid_result.1.unwrap());
 }
 
 fn get_bare_token(bare_token: String) -> Option<String> {

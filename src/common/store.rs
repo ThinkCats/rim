@@ -1,4 +1,4 @@
-use std::{sync::Mutex, cell::RefCell};
+use std::{cell::RefCell, sync::Mutex};
 
 use lazy_static::lazy_static;
 use mysql::{Pool, PooledConn};
@@ -18,6 +18,16 @@ pub struct ThreadLocalStore {
     pub uid: u64,
 }
 
+pub fn add_local_store(token: String, uid: u64) {
+    THREAD_LOCAL.with(|r| {
+        let mut d = r.borrow_mut();
+        let token_existed = d.iter().any(|t| t.token == token);
+        if !token_existed {
+            d.push(ThreadLocalStore { token, uid });
+        }
+    });
+}
+
 thread_local! {
-   pub static  THREAD_LOCAL: RefCell<Vec<ThreadLocalStore>> = RefCell::new(Vec::new());
+   pub static THREAD_LOCAL: RefCell<Vec<ThreadLocalStore>> = RefCell::new(Vec::new());
 }
