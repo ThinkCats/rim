@@ -7,7 +7,7 @@ use crate::user::user_dao::update_token;
 use super::{
     user_dao::{
         has_account, insert_token, insert_user, select_user_by_account, select_user_by_uids,
-        select_user_token,
+        select_user_token_by_token, select_user_token_by_uid,
     },
     user_model::{User, UserLoginForm, UserToken},
 };
@@ -46,18 +46,25 @@ pub fn login(login_form: &UserLoginForm) -> Result<String> {
     }
 }
 
+pub fn valid_token(token: String) -> bool {
+    let user_token = select_user_token_by_token(token);
+    match user_token {
+        Some(d) => {
+            let expire_time = d.expire_time;
+            let valid_expire_time = in_expire_time(expire_time);
+            return valid_expire_time;
+        }
+        None => false,
+    }
+}
+
 fn create_token(uid: u64) -> String {
     //TODO check user token existed
-    let user_token = select_user_token(uid);
+    let user_token = select_user_token_by_uid(uid);
     match user_token {
         Some(u) => {
             let expire_time = u.expire_time;
-            let expire =
-                NaiveDateTime::parse_from_str(expire_time.as_str(), "%Y-%m-%d %H:%M:%S").unwrap();
-            println!("{}", expire);
-            let now_local = Local::now();
-            let now = NaiveDateTime::new(now_local.date_naive(), now_local.time());
-            let valid_expire_time = now.timestamp_millis() < expire.timestamp_millis();
+            let valid_expire_time = in_expire_time(expire_time);
             if valid_expire_time {
                 return u.token;
             }
@@ -89,4 +96,16 @@ fn calc_token_expire_time() -> String {
         .unwrap()
         .format("%Y-%m-%d %H:%M:%S")
         .to_string()
+}
+
+fn in_expire_time(expire_time: String) -> bool {
+    let expire = convert_time(expire_time);
+    println!("{}", expire);
+    let now_local = Local::now();
+    let now = NaiveDateTime::new(now_local.date_naive(), now_local.time());
+    return now.timestamp_millis() < expire.timestamp_millis();
+}
+
+fn convert_time(time_str: String) -> NaiveDateTime {
+    NaiveDateTime::parse_from_str(time_str.as_str(), "%Y-%m-%d %H:%M:%S").unwrap()
 }

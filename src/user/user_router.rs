@@ -12,8 +12,9 @@ use super::{
 
 #[get("/get?<uid>")]
 pub fn user_get(uid: u64) -> WebResponse<User> {
-    let user = query_user(uid);
-    response(user, "user not found".into())
+    let result = query_user(uid);
+    // wrap_result(result)
+    response(result, 1001 ,"user not found".into())
 }
 
 #[post("/create", data = "<user>")]

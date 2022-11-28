@@ -78,11 +78,31 @@ pub fn has_account(account: &String) -> bool {
 }
 
 type UserTokenRow = (u64, u64, String, String);
-pub fn select_user_token(uid: u64) -> Option<UserToken> {
+pub fn select_user_token_by_uid(uid: u64) -> Option<UserToken> {
     let sql = format!(
         "select id,u_id,token,expire_time from `user_token` where u_id= '{}'",
         uid
     );
+    let user_token = select_user_token(sql);
+    match user_token {
+        Some(d) => {Some(d[0].clone())},
+        None => {None},
+    }
+}
+
+pub fn select_user_token_by_token(token: String) -> Option<UserToken> {
+    let sql = format!(
+        "select id,u_id,token,expire_time from `user_token` where token= '{}'",
+        token
+    );
+    let user_token = select_user_token(sql);
+    match user_token {
+        Some(d) => {Some(d[0].clone())},
+        None => {None},
+    } 
+}
+
+fn select_user_token(sql: String) -> Option<Vec<UserToken>> {
     let result: Vec<UserTokenRow> = get_conn().query(sql).expect("query token error");
     if result.is_empty() {
         return None;
@@ -96,7 +116,7 @@ pub fn select_user_token(uid: u64) -> Option<UserToken> {
             expire_time: r.3.clone(),
         })
         .collect::<Vec<UserToken>>();
-    Some(d[0].clone())
+    return Some(d);
 }
 
 pub fn insert_token(token: &UserToken) -> Result<u64> {
@@ -116,5 +136,3 @@ pub fn update_token(token: &UserToken) -> Result<u64> {
         .expect("save token error");
     Ok(conn.last_insert_id())
 }
-
-
