@@ -18,6 +18,16 @@ pub struct GroupUserForm {
 
 #[derive(Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
+pub struct GroupUserChangeForm {
+    pub gid: u64,
+    pub uids: Vec<u64>,
+    #[serde(rename(serialize = "opType", deserialize = "opType"))]
+    pub op_type: u8, 
+}
+
+
+#[derive(Serialize, Deserialize)]
+#[serde(crate = "rocket::serde")]
 pub struct Group {
     pub id: Option<u64>,
     pub name: String,

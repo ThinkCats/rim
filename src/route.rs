@@ -2,7 +2,10 @@ use anyhow::Result;
 use rocket::{catch, catchers, fairing::AdHoc, get, http::uri::Origin, routes, Request};
 
 use crate::{
-    common::resp::{json_fail, response, WebResponse},
+    common::{
+        resp::{json_fail, response, WebResponse},
+        store::{ThreadLocalStore, THREAD_LOCAL},
+    },
     group::group_router::{group_create, group_get, group_user_get},
     user::{
         user_router::{user_create, user_get, user_login},
@@ -59,9 +62,19 @@ fn check_header_token(req: &mut Request) {
         return;
     }
     let token_str = token.unwrap();
-    if !valid_token(token_str) {
+    let valid_result = valid_token(token_str.clone());
+    if !valid_result.0 {
         req.set_uri(Origin::parse("/login/need").unwrap());
+        return;
     }
+    //Store login info
+    THREAD_LOCAL.with(|r| {
+        let mut d = r.borrow_mut();
+        d.push(ThreadLocalStore {
+            token: token_str.clone(),
+            uid: valid_result.1.unwrap(),
+        });
+    });
 }
 
 fn get_bare_token(bare_token: String) -> Option<String> {

@@ -46,18 +46,18 @@ pub fn login(login_form: &UserLoginForm) -> Result<String> {
     }
 }
 
-pub fn valid_token(token: String) -> bool {
+pub fn valid_token(token: String) -> (bool, Option<u64>) {
     if token.is_empty() {
-        return false;
+        return (false, None);
     }
     let user_token = select_user_token_by_token(token);
     match user_token {
         Some(d) => {
             let expire_time = d.expire_time;
             let valid_expire_time = in_expire_time(expire_time);
-            return valid_expire_time;
+            return (valid_expire_time, Some(d.u_id));
         }
-        None => false,
+        None => (false, None),
     }
 }
 

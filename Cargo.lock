@@ -1767,6 +1767,7 @@ dependencies = [
  "mysql",
  "rocket",
  "serde",
+ "thread_local",
  "tokio",
  "tokio-tungstenite",
  "uuid 1.2.2",

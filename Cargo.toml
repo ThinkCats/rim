@@ -15,3 +15,4 @@ anyhow = "1.0.53"
 serde = { version = "1.0", features = ["derive"] }
 chrono = { version = "0.4", features = ["unstable-locales"] }
 uuid = {version = "1.2.2",features = [ "v4"]}
+thread_local = "1.1.4"
