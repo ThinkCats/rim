@@ -47,6 +47,9 @@ pub fn login(login_form: &UserLoginForm) -> Result<String> {
 }
 
 pub fn valid_token(token: String) -> bool {
+    if token.is_empty() {
+        return false;
+    }
     let user_token = select_user_token_by_token(token);
     match user_token {
         Some(d) => {
