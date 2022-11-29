@@ -1,11 +1,17 @@
 use rocket::{get, post, serde::json::Json};
 
 use crate::{
-    common::{resp::{wrap_result, WebResponse}, store::THREAD_LOCAL},
+    common::{
+        resp::{wrap_result, WebResponse},
+        store::THREAD_LOCAL,
+    },
     group::group_model::{Group, GroupCreateForm},
 };
 
-use super::{group_service::{create_group, query_group, query_group_user}, group_model::{GroupUserDTS, GroupUserChangeForm}};
+use super::{
+    group_model::{GroupUserChangeForm, GroupUserDTS},
+    group_service::{change_group_user, create_group, query_group, query_group_user},
+};
 
 #[post("/create", data = "<create_form>")]
 pub fn group_create(create_form: Json<GroupCreateForm>) -> WebResponse<u64> {
@@ -17,7 +23,7 @@ pub fn group_create(create_form: Json<GroupCreateForm>) -> WebResponse<u64> {
 pub fn group_get(uid: u64) -> WebResponse<Vec<Group>> {
     let _ = THREAD_LOCAL.with(|r| {
         let d = r.borrow();
-        println!("test thread local info:{:?}",d);
+        println!("test thread local info:{:?}", d);
         return 123;
     });
     let result = query_group(uid);
@@ -32,6 +38,6 @@ pub fn group_user_get(gid: u64) -> WebResponse<Vec<GroupUserDTS>> {
 
 #[post("/user/change", data = "<change_form>")]
 pub fn group_user_change(change_form: Json<GroupUserChangeForm>) -> WebResponse<bool> {
-    //TODO
-    wrap_result(Ok(true))
+    let result = change_group_user(&change_form);
+    wrap_result(result)
 }

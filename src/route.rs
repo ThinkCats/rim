@@ -6,7 +6,7 @@ use crate::{
         resp::{json_fail, response, WebResponse},
         store::add_local_store,
     },
-    group::group_router::{group_create, group_get, group_user_get},
+    group::group_router::{group_create, group_get, group_user_change, group_user_get},
     user::{
         user_router::{user_create, user_get, user_login},
         user_service::valid_token,
@@ -17,7 +17,10 @@ pub async fn launch_web() -> Result<(), rocket::Error> {
     let _rocket = rocket::build()
         .mount("/", routes![index, login_need])
         .mount("/user", routes![user_get, user_create, user_login])
-        .mount("/group", routes![group_create, group_get, group_user_get])
+        .mount(
+            "/group",
+            routes![group_create, group_get, group_user_get, group_user_change],
+        )
         .attach(AdHoc::on_request("token_checker", |req, _| {
             Box::pin(async move {
                 println!(

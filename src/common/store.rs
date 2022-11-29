@@ -3,6 +3,11 @@ use std::{cell::RefCell, sync::Mutex};
 use lazy_static::lazy_static;
 use mysql::{Pool, PooledConn};
 
+pub const GROUP_USER_OP_TYPE_ADD: u8 =  1;
+pub const GROUP_USER_OP_TYPE_REMOVE: u8 =  2;
+pub const GROUP_USER_ROLE_COMMON: u8 =  1;
+pub const GROUP_USER_ROLE_ADMIN: u8 =  2;
+
 lazy_static! {
     pub static ref MYSQL_URL: String = String::from("mysql://root:12345678@localhost:3306/rim");
     pub static ref DB_POOL: Mutex<Pool> = Mutex::new(Pool::new(MYSQL_URL.as_str()).unwrap());

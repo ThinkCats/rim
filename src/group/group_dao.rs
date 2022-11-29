@@ -62,9 +62,12 @@ pub fn select_group(uid: u64) -> Result<Vec<Group>> {
     Ok(d)
 }
 
-type GroupUserRow = (u64, u64, u8);
+type GroupUserRow = (u64, u64, u8, u64);
 pub fn select_group_user(gid: u64) -> Vec<GroupUser> {
-    let sql = format!("select g_id,u_id,role from group_user where g_id = {}", gid);
+    let sql = format!(
+        "select g_id,u_id,role,id from group_user where g_id = {}",
+        gid
+    );
     let result: Vec<GroupUserRow> = get_conn().query(sql).expect("query data error");
     result
         .iter()
@@ -72,6 +75,33 @@ pub fn select_group_user(gid: u64) -> Vec<GroupUser> {
             gid: r.0,
             uid: r.1,
             role: r.2,
+            id: Some(r.3),
         })
         .collect::<Vec<GroupUser>>()
+}
+
+pub fn insert_group_user(group_users: Vec<GroupUser>) -> Result<u64> {
+    let values = group_users
+        .iter()
+        .map(|r| format!("({},{},{})", r.gid, r.uid, r.role))
+        .collect::<Vec<String>>()
+        .join(",");
+    let group_user_sql = format!("insert into group_user(g_id,u_id,role) values {}", values);
+    let mut conn = get_conn();
+    conn.query_drop(group_user_sql)
+        .expect("add group user error");
+    Ok(conn.last_insert_id())
+}
+
+pub fn delete_group_user(group_users: Vec<GroupUser>) -> Result<bool> {
+    let ids = group_users
+        .iter()
+        .map(|r| r.id.unwrap().to_string())
+        .collect::<Vec<String>>()
+        .join(",");
+    let del_sql = format!("delete from group_user where id in ({})", ids);
+    get_conn()
+        .query_drop(del_sql)
+        .expect("delete group user error");
+    Ok(true)
 }
