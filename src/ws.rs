@@ -7,6 +7,8 @@ use tokio_tungstenite::{tungstenite::Message, accept_async};
 
 type Sender = UnboundedSender<Message>;
 type PeerMap = Arc<Mutex<HashMap<SocketAddr, Sender>>>;
+type UserPeerMap = Arc<Mutex<HashMap<u64,PeerMap>>>;
+
 
 
 pub async fn launch_ws() ->  Result<(), Error> {
@@ -43,6 +45,9 @@ async fn handle_connection(state: PeerMap, raw_stream: TcpStream, addr: SocketAd
 
     let broadcast_incoming = incoming.try_for_each(|msg| {
         println!("received msg from:{}, msg:{}", addr, msg.to_text().unwrap());
+
+        //parse msg body
+
         let peer = state.lock().unwrap();
 
         // We want to broadcast the message to everyone except ourselves.
@@ -68,4 +73,10 @@ async fn handle_connection(state: PeerMap, raw_stream: TcpStream, addr: SocketAd
 
     println!("{} disconnected", &addr);
     state.lock().unwrap().remove(&addr);
+}
+
+fn parse_msg(msg: String) -> Result<bool,Error> {
+
+
+    Ok(true)
 }
