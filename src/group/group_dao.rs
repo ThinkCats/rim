@@ -3,7 +3,7 @@ use mysql::{params, prelude::Queryable, TxOpts};
 
 use crate::common::store::get_conn;
 
-use super::group_model::{Group, GroupCreateForm, GroupUser};
+use super::group_model::{Group, GroupCreateForm, GroupUpdateForm, GroupUser};
 
 pub fn insert_group(form: &GroupCreateForm) -> Result<u64> {
     let mut conn = get_conn();
@@ -36,6 +36,14 @@ pub fn insert_group(form: &GroupCreateForm) -> Result<u64> {
     tx.commit().expect("add user tx error");
 
     Ok(group_id)
+}
+
+pub fn update_group(form: &GroupUpdateForm) -> Result<bool> {
+    let sql = "update `groups` set name = ?,  avatar = ? where id = ?";
+    let _ = get_conn()
+        .exec_drop(sql, (&form.name, &form.avatar, &form.id))
+        .expect("update group error");
+    Ok(true)
 }
 
 type GroupRow = (u64, String, String, u8, u64);

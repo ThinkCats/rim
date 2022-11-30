@@ -9,13 +9,19 @@ use crate::{
 };
 
 use super::{
-    group_model::{GroupUserChangeForm, GroupUserDTS},
-    group_service::{change_group_user, create_group, query_group, query_group_user},
+    group_model::{GroupUpdateForm, GroupUserChangeForm, GroupUserDTS},
+    group_service::{change_group_user, create_group, query_group, query_group_user, update_group},
 };
 
 #[post("/create", data = "<create_form>")]
 pub fn group_create(create_form: Json<GroupCreateForm>) -> WebResponse<u64> {
     let result = create_group(&create_form);
+    wrap_result(result)
+}
+
+#[post("/update", data = "<update_form>")]
+pub fn group_update(update_form: Json<GroupUpdateForm>) -> WebResponse<bool> {
+    let result = update_group(&update_form);
     wrap_result(result)
 }
 

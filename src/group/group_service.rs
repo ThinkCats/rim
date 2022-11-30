@@ -7,13 +7,19 @@ use crate::{
 
 use super::{
     group_dao::{
-        delete_group_user, insert_group, insert_group_user, select_group, select_group_user,
+        self, delete_group_user, insert_group, insert_group_user, select_group, select_group_user,
     },
-    group_model::{Group, GroupCreateForm, GroupUser, GroupUserChangeForm, GroupUserDTS},
+    group_model::{
+        Group, GroupCreateForm, GroupUpdateForm, GroupUser, GroupUserChangeForm, GroupUserDTS,
+    },
 };
 
 pub fn create_group(form: &GroupCreateForm) -> Result<u64> {
     insert_group(form)
+}
+
+pub fn update_group(form: &GroupUpdateForm) -> Result<bool> {
+    group_dao::update_group(form)
 }
 
 pub fn query_group(uid: u64) -> Result<Vec<Group>> {

@@ -11,6 +11,14 @@ pub struct GroupCreateForm {
 
 #[derive(Serialize, Deserialize)]
 #[serde(crate = "rocket::serde")]
+pub struct  GroupUpdateForm {
+    pub id: u64,
+    pub name: String,
+    pub avatar: String,
+}
+
+#[derive(Serialize, Deserialize)]
+#[serde(crate = "rocket::serde")]
 pub struct GroupUserForm {
     pub uid: u64,
     pub role: u8,
