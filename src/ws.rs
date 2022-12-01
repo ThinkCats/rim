@@ -71,8 +71,7 @@ async fn handle_connection(
         //parse msg body
         let msg_event = parse_msg(msg_json);
         if msg_event.is_none() {
-            let resp = "msg body error".into();
-            send_msg(self_sender, resp);
+            println!("msg body error,skip.");
             return future::ok(());
         }
 
@@ -114,13 +113,15 @@ fn parse_msg(msg: &str) -> Option<MsgEvent> {
     if msg.is_empty() {
         return None;
     }
-    let msg_event = serde_json::from_str(msg);
+    let msg_event: Result<MsgEvent, serde_json::Error> = serde_json::from_str(msg);
     match msg_event {
-        Ok(event) => Some(event),
+        Ok(event) => {
+            let body = &event.body;
+            if body.client_msg_id.is_empty() {
+                return None;
+            }
+            return Some(event);
+        }
         Err(_) => None,
     }
-}
-
-fn send_msg(sender: &UnboundedSender<Message>, msg: String) {
-    sender.unbounded_send(Message::Text(msg)).unwrap();
 }

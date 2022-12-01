@@ -1,8 +1,11 @@
+use futures::channel::mpsc::UnboundedSender;
+use serde::Serialize;
 use tokio_tungstenite::tungstenite::Message;
 
 use crate::{
-    message::message_model::{EventType, MsgBody, MsgEvent},
-    ws::{Sender, UserPeerMap}, user::user_dao::select_user_token_by_token,
+    message::message_model::{EventType, MsgBody, MsgEvent, MsgAck},
+    user::user_dao::select_user_token_by_token,
+    ws::{Sender, UserPeerMap},
 };
 
 pub fn handle_ws_msg(msg: &MsgEvent, user_channel: &UserPeerMap, sender: &Sender) {
@@ -10,15 +13,6 @@ pub fn handle_ws_msg(msg: &MsgEvent, user_channel: &UserPeerMap, sender: &Sender
         EventType::Login => {
             println!("handle login event");
             handle_login(&msg.body, user_channel, sender);
-            //test resend
-            match user_channel.lock().unwrap().get(&msg.body.uid) {
-                Some(d) => {
-                    d.unbounded_send(Message::Text("(hhaha)".into())).unwrap();
-                },
-                None => {
-                    println!("uid not in channel map, skip.")
-                },
-            }
         }
         EventType::Msg => {}
         EventType::Logout => {}
@@ -34,13 +28,23 @@ fn handle_login(body: &MsgBody, user_channel: &UserPeerMap, sender: &Sender) {
     let uid = body.uid;
     let user_token = select_user_token_by_token(token);
     match user_token {
-        Some(u_t) => {
-            if uid == u_t.u_id {
+        Some(d) => {
+            if uid == d.u_id {
+                let s = sender.clone();
+                send_msg(&s,  MsgAck::ack(body.client_msg_id.clone()));
                 user_channel.lock().unwrap().insert(uid, sender.clone());
             }
-        },
+        }
         None => {
             println!("invalid user token, do nothing");
-        },
+        }
     }
+}
+
+fn send_msg<T>(sender: &UnboundedSender<Message>, t: T)
+where
+    T: Serialize,
+{
+    let msg_str = serde_json::to_string(&t).unwrap();
+    sender.unbounded_send(Message::Text(msg_str)).unwrap();
 }
