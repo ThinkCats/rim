@@ -70,7 +70,7 @@ async fn handle_connection(
 
         //parse msg body
         let msg_event = parse_msg(msg_json);
-        if msg_event.is_err() {
+        if msg_event.is_none() {
             let resp = "msg body error".into();
             send_msg(self_sender, resp);
             return future::ok(());
@@ -81,23 +81,23 @@ async fn handle_connection(
         //TODO main process and send to receiver
         handle_ws_msg(&m_event, &user_state, &self_sender);
 
-        let resp = format!("ACK for your: {}", m_event.body.content);
+        // let resp = format!("ACK for your: {}", m_event.body.content);
         //ack and send msg
-        send_msg(self_sender, resp);
+        //send_msg(self_sender, resp);
 
         // We want to broadcast the message to everyone except ourselves.
-        let broadcast_recipients = peer
-            .iter()
-            .filter(|(peer_addr, _)| peer_addr != &&addr)
-            .map(|(addr, _)| addr);
+        // let broadcast_recipients = peer
+        //     .iter()
+        //     .filter(|(peer_addr, _)| peer_addr != &&addr)
+        //     .map(|(addr, _)| addr);
 
-        for recp in broadcast_recipients {
-            println!("response to other client addr:{}, msg:{}", recp, msg);
-            let sender = peer.get(recp).expect(
-                format!("can not get sender from state hashmap for addr:{}", addr).as_str(),
-            );
-            // sender.unbounded_send(Message::Text(resp.clone())).unwrap();
-        }
+        // for recp in broadcast_recipients {
+        //     println!("response to other client addr:{}, msg:{}", recp, msg);
+        //     let sender = peer.get(recp).expect(
+        //         format!("can not get sender from state hashmap for addr:{}", addr).as_str(),
+        //     );
+        //     // sender.unbounded_send(Message::Text(resp.clone())).unwrap();
+        // }
 
         future::ok(())
     });
@@ -110,9 +110,15 @@ async fn handle_connection(
     state.lock().unwrap().remove(&addr);
 }
 
-fn parse_msg(msg: &str) -> Result<MsgEvent, Error> {
-    let msg_event: MsgEvent = serde_json::from_str(msg).expect("msg body parse error");
-    Ok(msg_event)
+fn parse_msg(msg: &str) -> Option<MsgEvent> {
+    if msg.is_empty() {
+        return None;
+    }
+    let msg_event = serde_json::from_str(msg);
+    match msg_event {
+        Ok(event) => Some(event),
+        Err(_) => None,
+    }
 }
 
 fn send_msg(sender: &UnboundedSender<Message>, msg: String) {

@@ -1,3 +1,5 @@
+use tokio_tungstenite::tungstenite::Message;
+
 use crate::{
     message::message_model::{EventType, MsgBody, MsgEvent},
     ws::{Sender, UserPeerMap}, user::user_dao::select_user_token_by_token,
@@ -8,6 +10,15 @@ pub fn handle_ws_msg(msg: &MsgEvent, user_channel: &UserPeerMap, sender: &Sender
         EventType::Login => {
             println!("handle login event");
             handle_login(&msg.body, user_channel, sender);
+            //test resend
+            match user_channel.lock().unwrap().get(&msg.body.uid) {
+                Some(d) => {
+                    d.unbounded_send(Message::Text("(hhaha)".into())).unwrap();
+                },
+                None => {
+                    println!("uid not in channel map, skip.")
+                },
+            }
         }
         EventType::Msg => {}
         EventType::Logout => {}
