@@ -77,6 +77,11 @@ pub fn change_group_user(change_form: &GroupUserChangeForm) -> Result<bool> {
     Ok(true)
 }
 
+pub fn user_in_group(uid: u64, gid: u64) -> bool {
+    let group_users = select_group_user(gid);
+    group_users.iter().any(|r| r.uid == uid)
+}
+
 fn convert_group_users(change_form: &GroupUserChangeForm) -> Vec<GroupUser> {
     change_form
         .uids

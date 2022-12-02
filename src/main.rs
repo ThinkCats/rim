@@ -6,6 +6,7 @@ extern crate rocket;
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
+
     let _r = tokio::join!(launch_web(), launch_ws());
 
     Ok(())
