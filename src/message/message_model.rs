@@ -39,6 +39,8 @@ pub struct MsgBody {
     pub content: String,
     #[serde(rename(serialize = "clientMsgId", deserialize = "clientMsgId"))]
     pub client_msg_id: String,
+    #[serde(rename(serialize = "msgId", deserialize = "msgId"))]
+    pub msg_id: Option<u64>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -92,6 +94,7 @@ impl MessageInfo {
     }
 }
 
+#[derive(Serialize, Deserialize, Clone)]
 pub struct MessageInbox {
     pub id: Option<u64>,
     pub g_id: u64,

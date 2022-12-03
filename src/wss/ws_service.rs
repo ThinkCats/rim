@@ -1,12 +1,14 @@
+use anyhow::Result;
 use futures::channel::mpsc::UnboundedSender;
 
 use serde::Serialize;
 use tokio_tungstenite::tungstenite::Message;
 
 use crate::{
+    common::store::STATUS_TRUE,
     group::{group_dao::select_group_user, group_model::GroupUser, group_service::user_in_group},
     message::{
-        message_dao::insert_messages,
+        message_dao::{insert_messages, select_msg_inbox, update_inbox_send_status},
         message_model::{
             EventType, MessageInbox, MessageInfo, MessageType, MsgAck, MsgBody, MsgEvent,
         },
@@ -77,14 +79,23 @@ fn handle_msg(body: &MsgBody, user_channel_map: &UserPeerMap, current_sender: &S
 
     let group_user = select_group_user(body.gid.unwrap());
     //save msg
-    save_new_msg(body, group_user.clone());
+    let msg_id = save_new_msg(body, group_user.clone());
+    if msg_id.is_err() {
+        println!("[warn]save msg fail");
+        return;
+    }
     //send ack
     send_ack(body, current_sender);
     //send to others
-    send_to_others(body, group_user.clone(), user_channel_map);
+    send_to_others(msg_id.unwrap(), body, group_user.clone(), user_channel_map);
 }
 
-fn send_to_others(body: &MsgBody, group_user: Vec<GroupUser>, user_channel_map: &UserPeerMap) {
+fn send_to_others(
+    msg_id: u64,
+    body: &MsgBody,
+    group_user: Vec<GroupUser>,
+    user_channel_map: &UserPeerMap,
+) {
     let msg = MsgEvent {
         event: EventType::Msg,
         body: MsgBody {
@@ -93,38 +104,27 @@ fn send_to_others(body: &MsgBody, group_user: Vec<GroupUser>, user_channel_map: 
             gid: body.gid,
             content: body.content.clone(),
             client_msg_id: body.client_msg_id.clone(),
+            msg_id: Some(msg_id),
         },
     };
     for ele in group_user {
-       if ele.uid != body.uid {
-        let user_channel = user_channel_map.lock().unwrap();
-        let sender = user_channel.get(&ele.uid);
-        match sender {
-            Some(s) => {
-                send_msg(s, msg.clone());
-                todo!("update send status");
+        if ele.uid != body.uid {
+            let user_channel = user_channel_map.lock().unwrap();
+            let sender = user_channel.get(&ele.uid);
+            match sender {
+                Some(s) => {
+                    send_msg(s, msg.clone());
+                    update_inbox_send_staus_ok(msg_id, body.gid.unwrap(), ele.uid);
+                }
+                None => {
+                    println!("no reciver found in user channel map");
+                }
             }
-            None => {
-                println!("no reciver found in user channel map");
-            }
-        } 
-       } 
+        }
     }
-    // let _ = group_user.iter().filter(|r| r.uid != body.uid).map(|r| {
-    //     let user_channel = user_channel_map.lock().unwrap();
-    //     let sender = user_channel.get(&r.uid);
-    //     match sender {
-    //         Some(s) => {
-    //             send_msg(s, msg.clone());
-    //         }
-    //         None => {
-    //             println!("no reciver found in user channel map");
-    //         }
-    //     }
-    // });
 }
 
-fn save_new_msg(body: &MsgBody, group_user: Vec<GroupUser>) {
+fn save_new_msg(body: &MsgBody, group_user: Vec<GroupUser>) -> Result<u64> {
     let msg_info = MessageInfo::from(body);
     let msg_inboxs = group_user
         .iter()
@@ -133,6 +133,19 @@ fn save_new_msg(body: &MsgBody, group_user: Vec<GroupUser>) {
     let result = insert_messages(&msg_info, msg_inboxs);
     if result.is_err() {
         println!("save new msg error");
+    }
+    result
+}
+
+fn update_inbox_send_staus_ok(msg_id: u64, gid: u64, rev_uid: u64) {
+    let msg_inbox = select_msg_inbox(gid, msg_id, rev_uid);
+    match msg_inbox {
+        Some(inbox) => {
+            let _ = update_inbox_send_status(inbox.id.unwrap(), STATUS_TRUE);
+        }
+        None => {
+            println!("[warn] can not find msg inbox when update send status")
+        }
     }
 }
 
