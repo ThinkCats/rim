@@ -8,6 +8,8 @@ pub const GROUP_USER_OP_TYPE_REMOVE: u8 = 2;
 pub const GROUP_USER_ROLE_COMMON: u8 = 1;
 pub const GROUP_USER_ROLE_ADMIN: u8 = 2;
 
+pub const STATUS_TRUE: u8 = 1;
+pub const STATUS_FALSE: u8 = 2;
 
 
 lazy_static! {

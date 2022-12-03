@@ -3,7 +3,9 @@ use std::fmt::Display;
 use chrono::Local;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
+use crate::common::store::{STATUS_FALSE, STATUS_TRUE};
+
+#[derive(Serialize, Deserialize, Clone)]
 pub enum EventType {
     Login,
     Msg,
@@ -12,7 +14,7 @@ pub enum EventType {
     Ack,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub enum MessageType {
     Text,
     RichText,
@@ -29,7 +31,7 @@ impl Display for MessageType {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct MsgBody {
     pub kind: MessageType,
     pub uid: u64,
@@ -39,7 +41,7 @@ pub struct MsgBody {
     pub client_msg_id: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct MsgEvent {
     pub event: EventType,
     pub body: MsgBody,
@@ -93,11 +95,41 @@ impl MessageInfo {
 pub struct MessageInbox {
     pub id: Option<u64>,
     pub g_id: u64,
-    pub m_id: u64,
+    pub m_id: Option<u64>,
     pub receiver_uid: u64,
     pub send_status: u8,
     pub read_status: u8,
-    pub read_time: String,
+    pub read_time: Option<String>,
     pub create_time: String,
     pub update_time: String,
+}
+
+impl MessageInbox {
+    pub fn from(
+        msg_body: &MsgBody,
+        msg_info: &MessageInfo,
+        receiver_uid: u64,
+        self_receiver: bool,
+    ) -> MessageInbox {
+        let now = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+        MessageInbox {
+            id: None,
+            g_id: msg_body.gid.expect("gid should not be null"),
+            m_id: msg_info.id,
+            receiver_uid,
+            send_status: if self_receiver {
+                STATUS_TRUE
+            } else {
+                STATUS_FALSE
+            },
+            read_status: if self_receiver {
+                STATUS_TRUE
+            } else {
+                STATUS_FALSE
+            },
+            read_time: None,
+            create_time: now.clone(),
+            update_time: now.clone(),
+        }
+    }
 }
