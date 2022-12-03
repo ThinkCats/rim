@@ -102,6 +102,7 @@ fn send_to_others(body: &MsgBody, group_user: Vec<GroupUser>, user_channel_map: 
         match sender {
             Some(s) => {
                 send_msg(s, msg.clone());
+                todo!("update send status");
             }
             None => {
                 println!("no reciver found in user channel map");
