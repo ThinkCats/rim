@@ -2,7 +2,10 @@ use anyhow::{bail, Ok, Result};
 use chrono::{Duration, Local, NaiveDateTime};
 use uuid::Uuid;
 
-use crate::user::user_dao::update_token;
+use crate::{
+    common::time::{format_time, parse_time_str},
+    user::user_dao::update_token,
+};
 
 use super::{
     user_dao::{
@@ -94,21 +97,17 @@ fn create_token(uid: u64) -> String {
 }
 
 fn calc_token_expire_time() -> String {
-    Local::now()
+    let expire_time = Local::now()
         .checked_add_signed(Duration::days(1))
         .unwrap()
-        .format("%Y-%m-%d %H:%M:%S")
-        .to_string()
+        .naive_local();
+    format_time(expire_time)
 }
 
 fn in_expire_time(expire_time: String) -> bool {
-    let expire = convert_time(expire_time);
+    let expire = parse_time_str(expire_time);
     println!("{}", expire);
     let now_local = Local::now();
     let now = NaiveDateTime::new(now_local.date_naive(), now_local.time());
     return now.timestamp_millis() < expire.timestamp_millis();
-}
-
-fn convert_time(time_str: String) -> NaiveDateTime {
-    NaiveDateTime::parse_from_str(time_str.as_str(), "%Y-%m-%d %H:%M:%S").unwrap()
 }
