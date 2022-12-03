@@ -1,8 +1,8 @@
 use anyhow::{Ok, Result};
-use chrono::Local;
+use chrono::NaiveDateTime;
 use mysql::{prelude::Queryable, TxOpts};
 
-use crate::common::store::get_conn;
+use crate::common::{store::get_conn, time::format_time};
 
 use super::message_model::{MessageInbox, MessageInfo};
 
@@ -43,15 +43,24 @@ pub fn insert_messages(msg_info: &MessageInfo, msg_inboxs: Vec<MessageInbox>) ->
     Ok(msg_id)
 }
 
-type MsgInboxRow = (u64, u64, u64, u64, u8, u8);
+type MsgInboxRow = (
+    u64,
+    u64,
+    u64,
+    u64,
+    u8,
+    u8,
+    Option<NaiveDateTime>,
+    NaiveDateTime,
+    NaiveDateTime,
+);
 pub fn select_msg_inbox(gid: u64, mid: u64, ruid: u64) -> Option<MessageInbox> {
     let sql = format!(
-        "select id,g_id,m_id,receiver_uid,send_status,read_status
+        "select id,g_id,m_id,receiver_uid,send_status,read_status,read_time,create_time,update_time
          from message_inbox where g_id = {} and m_id = {} and receiver_uid = {}",
         gid, mid, ruid
     );
     let result: Vec<MsgInboxRow> = get_conn().query(sql).expect("query msg inbox error");
-    let now = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
     let result = result
         .iter()
         .map(|d| MessageInbox {
@@ -61,9 +70,13 @@ pub fn select_msg_inbox(gid: u64, mid: u64, ruid: u64) -> Option<MessageInbox> {
             receiver_uid: d.3,
             send_status: d.4,
             read_status: d.5,
-            read_time: Some(now.clone()),
-            create_time: now.clone(),
-            update_time: now.clone(),
+            read_time: if d.6.is_some() {
+                Some(format_time(d.6.unwrap()))
+            } else {
+                None
+            },
+            create_time: format_time(d.7),
+            update_time: format_time(d.8),
         })
         .collect::<Vec<MessageInbox>>();
 

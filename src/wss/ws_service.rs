@@ -31,7 +31,10 @@ pub fn handle_ws_msg(msg: &MsgEvent, user_channel_map: &UserPeerMap, current_sen
         }
         EventType::Logout => {}
         EventType::Heart => {}
-        EventType::Ack => {}
+        EventType::Ack => {
+            println!("handle ack msg");
+            //update send status
+        }
     }
 }
 
