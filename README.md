@@ -13,7 +13,7 @@ Msg Struct
 ```rust
 #[derive(Serialize, Deserialize, Clone)]
 pub struct MsgEvent {
-    //event: Login,Msg,Heart,Logout,Ack
+    //event: Login,Msg,Read,Heart,Logout,Ack
     pub event: EventType,
     pub body: MsgBody,
 }

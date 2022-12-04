@@ -9,6 +9,7 @@ use crate::common::store::{STATUS_FALSE, STATUS_TRUE};
 pub enum EventType {
     Login,
     Msg,
+    Read,
     Heart,
     Logout,
     Ack,

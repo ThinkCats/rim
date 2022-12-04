@@ -33,8 +33,9 @@ pub fn handle_ws_msg(msg: &MsgEvent, user_channel_map: &UserPeerMap, current_sen
         EventType::Heart => {}
         EventType::Ack => {
             println!("handle ack msg");
-            //update send status
+            handle_client_ack(&msg.body);
         }
+        EventType::Read => {}
     }
 }
 
@@ -121,7 +122,6 @@ fn send_to_others(
             match sender {
                 Some(s) => {
                     send_msg(s, msg.clone());
-                    update_inbox_send_staus_ok(msg_id, body.gid.unwrap(), ele.uid);
                 }
                 None => {
                     println!("no reciver found in user channel map");
@@ -142,6 +142,26 @@ fn save_new_msg(body: &MsgBody, group_user: Vec<GroupUser>) -> Result<u64> {
         println!("save new msg error");
     }
     result
+}
+
+fn handle_client_ack(body: &MsgBody) {
+    match body.msg_id {
+        Some(m_id) => {
+            let gid = body.gid;
+            match gid {
+                Some(g_id) => {
+                    let rev_uid = body.uid;
+                    update_inbox_send_staus_ok(m_id, g_id, rev_uid);
+                }
+                None => {
+                    println!("[warn] client ack msg no group id");
+                }
+            }
+        }
+        None => {
+            println!("[warn] client ack msg no msg id");
+        }
+    }
 }
 
 fn update_inbox_send_staus_ok(msg_id: u64, gid: u64, rev_uid: u64) {
