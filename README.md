@@ -145,3 +145,26 @@ server ack:
 }
 ```
 
+5. client read message
+```json
+{
+    "event": "Read",
+    "body": {
+        "kind": "Text",
+        "content": "", 
+        "uid": 2,
+        "gid": 3,
+        "clientMsgId": "72aebfd4aeefaaa",
+		"msgId": 29
+    }
+}
+```
+server ack:
+```json
+{
+	"clientMsgId": "72aebfd4aeefaaa",
+	"serverMsgId": 29,
+	"kind": "Ack",
+	"content": "Ok"
+}
+```

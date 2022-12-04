@@ -1,15 +1,18 @@
 use anyhow::Result;
+use chrono::Local;
 use futures::channel::mpsc::UnboundedSender;
 
-use log::{info, error};
+use log::{error, info};
 use serde::Serialize;
 use tokio_tungstenite::tungstenite::Message;
 
 use crate::{
-    common::store::STATUS_TRUE,
+    common::{store::STATUS_TRUE, time::format_time},
     group::{group_dao::select_group_user, group_model::GroupUser, group_service::user_in_group},
     message::{
-        message_dao::{insert_messages, select_msg_inbox, update_inbox_send_status},
+        message_dao::{
+            insert_messages, select_msg_inbox, update_inbox_read_status, update_inbox_send_status,
+        },
         message_model::{
             EventType, MessageInbox, MessageInfo, MessageType, MsgAck, MsgBody, MsgEvent,
         },
@@ -38,7 +41,10 @@ pub fn handle_ws_msg(msg: &MsgEvent, user_channel_map: &UserPeerMap, current_sen
                 handle_client_ack(&msg.body, current_sender);
             }
         }
-        EventType::Read => {}
+        EventType::Read => {
+            info!("handle read msg");
+            handle_read(&msg.body, current_sender);
+        }
     }
 }
 
@@ -58,6 +64,36 @@ fn handle_login(body: &MsgBody, user_channel_map: &UserPeerMap, current_sender: 
         }
         None => {
             error!("invalid user token, do nothing");
+        }
+    }
+}
+
+fn handle_read(body: &MsgBody, current_sender: &Sender) {
+    match body.msg_id {
+        Some(msg_id) => match body.gid {
+            Some(gid) => {
+                update_inbox_read_status_ok(gid, msg_id, body.uid);
+                send_ack(body, Some(msg_id), current_sender);
+            }
+            None => {
+                error!("client read msg no group id, from user:{}", body.uid);
+            }
+        },
+        None => {
+            error!("client read msg no server msg id, from user:{}", body.uid);
+        }
+    }
+}
+
+fn update_inbox_read_status_ok(gid: u64, msg_id: u64, rev_uid: u64) {
+    let msg_inbox = select_msg_inbox(gid, msg_id, rev_uid);
+    match msg_inbox {
+        Some(inbox) => {
+            let now = format_time(Local::now().naive_local());
+            let _ = update_inbox_read_status(inbox.id.unwrap(), STATUS_TRUE, now);
+        }
+        None => {
+            error!("[warn] can not find msg inbox when update send status")
         }
     }
 }

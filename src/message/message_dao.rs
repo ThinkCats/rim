@@ -93,3 +93,11 @@ pub fn update_inbox_send_status(id: u64, send_status: u8) -> Result<bool> {
         .expect("update send status error");
     Ok(true)
 }
+
+pub fn update_inbox_read_status(id: u64, read_status: u8, read_time: String) -> Result<bool> {
+    let sql = "update message_inbox set read_status = ?, read_time = ? where id= ?";
+    let _: Vec<u64> = get_conn()
+    .exec(sql, (&read_status, &read_time, &id))
+    .expect("update send status error");
+Ok(true) 
+}
