@@ -38,10 +38,24 @@ pub fn insert_messages(msg_info: &MessageInfo, msg_inboxs: Vec<MessageInbox>) ->
         }),
     )
     .expect("insert message inbox error");
+
+
+
+    // todo: check user chat list existed, insert or update chat list
+    // let chat_list_sql = "insert into chat_list(g_id,u_id,last_msg_id) values(?,?,?)";
+    // tx.exec(chat_list_sql, (
+    //     &msg_info.g_id,
+        
+    // ));
+
     tx.commit().expect("commit message tx error");
 
     Ok(msg_id)
 }
+
+
+// todo: select chat list
+//fn select_chat_list(gid:u64,uid: u64) -> Vec<>
 
 type MsgInboxRow = (
     u64,
