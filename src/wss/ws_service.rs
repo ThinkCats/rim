@@ -11,7 +11,7 @@ use crate::{
     group::{group_dao::select_group_user, group_model::GroupUser, group_service::user_in_group},
     message::{
         message_dao::{
-            insert_messages, select_msg_inbox, update_inbox_read_status, update_inbox_send_status,
+            insert_messages, select_msg_inbox_for_gmr, update_inbox_read_status, update_inbox_send_status,
         },
         message_model::{
             EventType, MessageInbox, MessageInfo, MessageType, MsgAck, MsgBody, MsgEvent,
@@ -35,7 +35,9 @@ pub fn handle_ws_msg(msg: &MsgEvent, user_channel_map: &UserPeerMap, current_sen
         }
         EventType::Logout => {
             info!("handle logout");
-            handle_logout(&msg.body, user_channel_map, current_sender);
+            if valid_user_token(&msg.body, user_channel_map) {
+                handle_logout(&msg.body, user_channel_map, current_sender);
+            }
         }
         EventType::Heart => {
             todo!("todo heart");
@@ -99,7 +101,7 @@ fn handle_read(body: &MsgBody, current_sender: &Sender) {
 }
 
 fn update_inbox_read_status_ok(gid: u64, msg_id: u64, rev_uid: u64) {
-    let msg_inbox = select_msg_inbox(gid, msg_id, rev_uid);
+    let msg_inbox = select_msg_inbox_for_gmr(gid, msg_id, rev_uid);
     match msg_inbox {
         Some(inbox) => {
             let now = format_time(Local::now().naive_local());
@@ -222,7 +224,7 @@ fn handle_client_ack(body: &MsgBody, current_sender: &Sender) {
 }
 
 fn update_inbox_send_staus_ok(msg_id: u64, gid: u64, rev_uid: u64) {
-    let msg_inbox = select_msg_inbox(gid, msg_id, rev_uid);
+    let msg_inbox = select_msg_inbox_for_gmr(gid, msg_id, rev_uid);
     match msg_inbox {
         Some(inbox) => {
             let _ = update_inbox_send_status(inbox.id.unwrap(), STATUS_TRUE);

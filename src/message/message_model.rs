@@ -3,7 +3,7 @@ use std::fmt::Display;
 use chrono::Local;
 use serde::{Deserialize, Serialize};
 
-use crate::common::store::{STATUS_FALSE, STATUS_TRUE};
+use crate::{common::store::{STATUS_FALSE, STATUS_TRUE}, group::group_model::Group, user::user_model::User};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub enum EventType {
@@ -71,6 +71,7 @@ impl MsgAck {
     }
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct MessageInfo {
     pub id: Option<u64>,
     pub kind: String,
@@ -139,4 +140,12 @@ impl MessageInbox {
             update_time: now.clone(),
         }
     }
+}
+
+
+#[derive(Serialize, Deserialize)]
+pub struct ChatMessage {
+    pub group: Group,
+    pub msg: MessageInfo,
+    pub user: User,
 }

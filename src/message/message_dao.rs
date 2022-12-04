@@ -54,14 +54,40 @@ type MsgInboxRow = (
     NaiveDateTime,
     NaiveDateTime,
 );
-pub fn select_msg_inbox(gid: u64, mid: u64, ruid: u64) -> Option<MessageInbox> {
+pub fn select_msg_inbox_for_gmr(gid: u64, mid: u64, ruid: u64) -> Option<MessageInbox> {
     let sql = format!(
         "select id,g_id,m_id,receiver_uid,send_status,read_status,read_time,create_time,update_time
          from message_inbox where g_id = {} and m_id = {} and receiver_uid = {}",
         gid, mid, ruid
     );
+    let result = select_msg_inbox(sql);
+    if result.is_err() {
+        return None;
+    }
+    let datas = result.unwrap();
+    if datas.is_empty() {
+        return None;
+    }
+    Some(datas[0].clone())
+}
+
+pub fn select_msg_inbox_for_user(
+    ruid: u64,
+    page: u32,
+    page_size: u32,
+) -> Result<Vec<MessageInbox>> {
+    let start_idx = (page - 1) * page_size;
+    let sql = format!(
+        "select id,g_id,m_id,receiver_uid,send_status,read_status,read_time,create_time,update_time
+         from message_inbox where  receiver_uid = {} order by id desc limit {},{}",
+        ruid, start_idx, page_size
+    );
+    select_msg_inbox(sql)
+}
+
+fn select_msg_inbox(sql: String) -> Result<Vec<MessageInbox>> {
     let result: Vec<MsgInboxRow> = get_conn().query(sql).expect("query msg inbox error");
-    let result = result
+    let data = result
         .iter()
         .map(|d| MessageInbox {
             id: Some(d.0),
@@ -79,11 +105,7 @@ pub fn select_msg_inbox(gid: u64, mid: u64, ruid: u64) -> Option<MessageInbox> {
             update_time: format_time(d.8),
         })
         .collect::<Vec<MessageInbox>>();
-
-    if result.is_empty() {
-        return None;
-    }
-    Some(result[0].clone())
+    Ok(data)
 }
 
 pub fn update_inbox_send_status(id: u64, send_status: u8) -> Result<bool> {
@@ -97,7 +119,7 @@ pub fn update_inbox_send_status(id: u64, send_status: u8) -> Result<bool> {
 pub fn update_inbox_read_status(id: u64, read_status: u8, read_time: String) -> Result<bool> {
     let sql = "update message_inbox set read_status = ?, read_time = ? where id= ?";
     let _: Vec<u64> = get_conn()
-    .exec(sql, (&read_status, &read_time, &id))
-    .expect("update send status error");
-Ok(true) 
+        .exec(sql, (&read_status, &read_time, &id))
+        .expect("update send status error");
+    Ok(true)
 }
