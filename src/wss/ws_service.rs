@@ -33,8 +33,12 @@ pub fn handle_ws_msg(msg: &MsgEvent, user_channel_map: &UserPeerMap, current_sen
                 handle_msg(&msg.body, user_channel_map, current_sender);
             }
         }
-        EventType::Logout => {}
-        EventType::Heart => {}
+        EventType::Logout => {
+            todo!("todo logout");
+        }
+        EventType::Heart => {
+            todo!("todo heart");
+        }
         EventType::Ack => {
             info!("handle ack msg");
             if valid_user_token(&msg.body, user_channel_map) {
@@ -43,7 +47,9 @@ pub fn handle_ws_msg(msg: &MsgEvent, user_channel_map: &UserPeerMap, current_sen
         }
         EventType::Read => {
             info!("handle read msg");
-            handle_read(&msg.body, current_sender);
+            if valid_user_token(&msg.body, user_channel_map) {
+                handle_read(&msg.body, current_sender);
+            }
         }
     }
 }
