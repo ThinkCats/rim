@@ -34,7 +34,8 @@ pub fn handle_ws_msg(msg: &MsgEvent, user_channel_map: &UserPeerMap, current_sen
             }
         }
         EventType::Logout => {
-            todo!("todo logout");
+            info!("handle logout");
+            handle_logout(&msg.body, user_channel_map, current_sender);
         }
         EventType::Heart => {
             todo!("todo heart");
@@ -72,6 +73,12 @@ fn handle_login(body: &MsgBody, user_channel_map: &UserPeerMap, current_sender: 
             error!("invalid user token, do nothing");
         }
     }
+}
+
+fn handle_logout(body: &MsgBody, user_channel_map: &UserPeerMap, current_sender: &Sender) {
+    let uid = body.uid;
+    let _ = user_channel_map.lock().unwrap().remove(&uid);
+    send_ack(body, None, current_sender);
 }
 
 fn handle_read(body: &MsgBody, current_sender: &Sender) {

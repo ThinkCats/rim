@@ -132,7 +132,7 @@ server ack:
         "uid": 2,
         "gid": 3,
         "clientMsgId": "72aebfd4aeefaaa",
-		"msgId": 29
+        "msgId": 29
     }
 }
 ```
