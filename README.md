@@ -128,9 +128,11 @@ server ack:
     "event": "Ack",
     "body": {
         "kind": "Text",
-        "content": "28", //server msg id
-        "uid": 1,
-        "clientMsgId": "72aebfd4aeefaaa"
+        "content": "", 
+        "uid": 2,
+        "gid": 3,
+        "clientMsgId": "72aebfd4aeefaaa",
+		"msgId": 29
     }
 }
 ```
