@@ -33,7 +33,7 @@ pub fn handle_ws_msg(msg: &MsgEvent, user_channel_map: &UserPeerMap, current_sen
         EventType::Heart => {}
         EventType::Ack => {
             println!("handle ack msg");
-            handle_client_ack(&msg.body);
+            handle_client_ack(&msg.body, current_sender);
         }
         EventType::Read => {}
     }
@@ -144,7 +144,7 @@ fn save_new_msg(body: &MsgBody, group_user: Vec<GroupUser>) -> Result<u64> {
     result
 }
 
-fn handle_client_ack(body: &MsgBody) {
+fn handle_client_ack(body: &MsgBody,  current_sender: &Sender) {
     match body.msg_id {
         Some(m_id) => {
             let gid = body.gid;
@@ -152,6 +152,7 @@ fn handle_client_ack(body: &MsgBody) {
                 Some(g_id) => {
                     let rev_uid = body.uid;
                     update_inbox_send_staus_ok(m_id, g_id, rev_uid);
+                    send_ack(body, None, current_sender);
                 }
                 None => {
                     println!("[warn] client ack msg no group id");

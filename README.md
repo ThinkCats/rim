@@ -134,5 +134,14 @@ server ack:
     }
 }
 ```
-> no server ack msg
+
+server ack:
+```json
+{
+	"clientMsgId": "72aebfd4aeefaaa",
+	"serverMsgId": null,
+	"kind": "Ack",
+	"content": "Ok"
+}
+```
 
