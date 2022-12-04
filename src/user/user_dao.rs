@@ -1,4 +1,5 @@
 use anyhow::{Ok, Result};
+use log::info;
 use mysql::prelude::Queryable;
 
 use crate::common::store::get_conn;
@@ -17,7 +18,7 @@ pub fn select_user_by_uids(uids: Vec<u64>) -> Option<Vec<User>> {
         "select id,name,avatar,email,account,'' from `user` where id in ( {} )",
         uids_join
     );
-    println!("SQL:{}", sql);
+    info!("SQL:{}", sql);
     select_user(sql)
 }
 
@@ -33,7 +34,7 @@ pub fn select_user_by_account(account: String) -> Option<User> {
 fn select_user(sql: String) -> Option<Vec<User>> {
     let mut conn = get_conn();
     let result: Vec<UserRow> = conn.query(sql).unwrap();
-    println!("result:{:?}", result);
+    info!("result:{:?}", result);
     if result.is_empty() {
         return None;
     }

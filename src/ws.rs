@@ -10,6 +10,7 @@ use futures::{
     channel::mpsc::{unbounded, UnboundedSender},
     future, pin_mut, StreamExt, TryStreamExt,
 };
+use log::{info, error};
 use tokio::net::{TcpListener, TcpStream};
 use tokio_tungstenite::{accept_async, tungstenite::Message};
 
@@ -21,7 +22,7 @@ pub type UserPeerMap = Arc<Mutex<HashMap<u64, Sender>>>;
 
 pub async fn launch_ws() -> Result<(), Error> {
     //TODO handle Ctrl-C command
-    println!("Start Ws ...");
+    info!("Start Ws ...");
     let conn_state = PeerMap::new(Mutex::new(HashMap::new()));
     let user_state = UserPeerMap::new(Mutex::new(HashMap::new()));
 
@@ -29,7 +30,7 @@ pub async fn launch_ws() -> Result<(), Error> {
         .nth(1)
         .unwrap_or_else(|| "127.0.0.1:3012".to_string());
     let listener = TcpListener::bind(&addr).await.expect("Failed to bind");
-    println!("Ws Listening on: {}", addr);
+    info!("Ws Listening on: {}", addr);
 
     while let Ok((stream, addr)) = listener.accept().await {
         tokio::spawn(handle_connection(
@@ -49,11 +50,11 @@ async fn handle_connection(
     raw_stream: TcpStream,
     addr: SocketAddr,
 ) {
-    println!("Tcp connection from: {}", addr);
+    info!("Tcp connection from: {}", addr);
     let ws_stream = accept_async(raw_stream)
         .await
         .expect("error during handshake");
-    println!("websocket connection established: {}", addr);
+    info!("websocket connection established: {}", addr);
 
     let (sender, receiver) = unbounded();
 
@@ -66,17 +67,17 @@ async fn handle_connection(
         let self_sender = peer.get(&addr).unwrap();
 
         let msg_json = msg.to_text().unwrap();
-        println!("received msg from:{}, msg:{}", addr, msg_json);
+        info!("received msg from:{}, msg:{}", addr, msg_json);
 
         //parse msg body
         let msg_event = parse_msg(msg_json);
         if msg_event.is_none() {
-            println!("msg body error,skip.");
+            info!("msg body error,skip.");
             return future::ok(());
         }
 
         let m_event = msg_event.unwrap();
-        println!("msg event:{}", m_event.body.content);
+        info!("msg event:{}", m_event.body.content);
         //TODO main process and send to receiver
         handle_ws_msg(&m_event, &user_state, &self_sender);
 
@@ -91,7 +92,7 @@ async fn handle_connection(
         //     .map(|(addr, _)| addr);
 
         // for recp in broadcast_recipients {
-        //     println!("response to other client addr:{}, msg:{}", recp, msg);
+        //     info!("response to other client addr:{}, msg:{}", recp, msg);
         //     let sender = peer.get(recp).expect(
         //         format!("can not get sender from state hashmap for addr:{}", addr).as_str(),
         //     );
@@ -105,7 +106,7 @@ async fn handle_connection(
     pin_mut!(broadcast_incoming, receive_from_others);
     future::select(broadcast_incoming, receive_from_others).await;
 
-    println!("{} disconnected", &addr);
+    info!("{} disconnected", &addr);
     state.lock().unwrap().remove(&addr);
 }
 
@@ -123,8 +124,8 @@ fn parse_msg(msg: &str) -> Option<MsgEvent> {
             return Some(event);
         }
         Err(_) => {
-            println!("find error, do nothing");
+            error!("find error, do nothing");
             None
-        },
+        }
     }
 }

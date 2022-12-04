@@ -1,10 +1,7 @@
 use rocket::{get, post, serde::json::Json};
 
 use crate::{
-    common::{
-        resp::{wrap_result, WebResponse},
-        store::THREAD_LOCAL,
-    },
+    common::resp::{wrap_result, WebResponse},
     group::group_model::{Group, GroupCreateForm},
 };
 
@@ -27,11 +24,6 @@ pub fn group_update(update_form: Json<GroupUpdateForm>) -> WebResponse<bool> {
 
 #[get("/get?<uid>")]
 pub fn group_get(uid: u64) -> WebResponse<Vec<Group>> {
-    let _ = THREAD_LOCAL.with(|r| {
-        let d = r.borrow();
-        println!("test thread local info:{:?}", d);
-        return 123;
-    });
     let result = query_group(uid);
     wrap_result(result)
 }

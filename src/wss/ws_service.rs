@@ -1,6 +1,7 @@
 use anyhow::Result;
 use futures::channel::mpsc::UnboundedSender;
 
+use log::{info, error};
 use serde::Serialize;
 use tokio_tungstenite::tungstenite::Message;
 
@@ -20,11 +21,11 @@ use crate::{
 pub fn handle_ws_msg(msg: &MsgEvent, user_channel_map: &UserPeerMap, current_sender: &Sender) {
     match msg.event {
         EventType::Login => {
-            println!("handle login event");
+            info!("handle login event");
             handle_login(&msg.body, user_channel_map, current_sender);
         }
         EventType::Msg => {
-            println!("handle msg incoming");
+            info!("handle msg incoming");
             if valid_user_token(&msg.body, user_channel_map) {
                 handle_msg(&msg.body, user_channel_map, current_sender);
             }
@@ -32,7 +33,7 @@ pub fn handle_ws_msg(msg: &MsgEvent, user_channel_map: &UserPeerMap, current_sen
         EventType::Logout => {}
         EventType::Heart => {}
         EventType::Ack => {
-            println!("handle ack msg");
+            info!("handle ack msg");
             if valid_user_token(&msg.body, user_channel_map) {
                 handle_client_ack(&msg.body, current_sender);
             }
@@ -56,7 +57,7 @@ fn handle_login(body: &MsgBody, user_channel_map: &UserPeerMap, current_sender: 
             }
         }
         None => {
-            println!("invalid user token, do nothing");
+            error!("invalid user token, do nothing");
         }
     }
 }
@@ -74,7 +75,7 @@ fn valid_user_token(body: &MsgBody, user_channel_map: &UserPeerMap) -> bool {
     let t = r.get(&sender_uid);
     let valid = t.is_some();
     if !valid {
-        println!("user token invalid for uid:{}", sender_uid);
+        error!("user token invalid for uid:{}", sender_uid);
     }
     return valid;
 }
@@ -86,7 +87,7 @@ fn handle_msg(body: &MsgBody, user_channel_map: &UserPeerMap, current_sender: &S
     let uid = body.uid;
     let gid = body.gid.unwrap();
     if !user_in_group(uid, gid) {
-        println!("[warn] handle msg user not in group");
+        error!("[warn] handle msg user not in group");
         return;
     }
 
@@ -94,7 +95,7 @@ fn handle_msg(body: &MsgBody, user_channel_map: &UserPeerMap, current_sender: &S
     //save msg
     let msg_id = save_new_msg(body, group_user.clone());
     if msg_id.is_err() {
-        println!("[warn]save msg fail");
+        error!("[warn]save msg fail");
         return;
     }
     let m_id = msg_id.unwrap();
@@ -130,7 +131,7 @@ fn send_to_others(
                     send_msg(s, msg.clone());
                 }
                 None => {
-                    println!("no reciver found in user channel map");
+                    error!("no reciver found in user channel map");
                 }
             }
         }
@@ -145,7 +146,7 @@ fn save_new_msg(body: &MsgBody, group_user: Vec<GroupUser>) -> Result<u64> {
         .collect::<Vec<MessageInbox>>();
     let result = insert_messages(&msg_info, msg_inboxs);
     if result.is_err() {
-        println!("save new msg error");
+        error!("save new msg error");
     }
     result
 }
@@ -161,12 +162,12 @@ fn handle_client_ack(body: &MsgBody, current_sender: &Sender) {
                     send_ack(body, None, current_sender);
                 }
                 None => {
-                    println!("[warn] client ack msg no group id");
+                    error!("[warn] client ack msg no group id");
                 }
             }
         }
         None => {
-            println!("[warn] client ack msg no msg id");
+            error!("[warn] client ack msg no msg id");
         }
     }
 }
@@ -178,7 +179,7 @@ fn update_inbox_send_staus_ok(msg_id: u64, gid: u64, rev_uid: u64) {
             let _ = update_inbox_send_status(inbox.id.unwrap(), STATUS_TRUE);
         }
         None => {
-            println!("[warn] can not find msg inbox when update send status")
+            error!("[warn] can not find msg inbox when update send status")
         }
     }
 }
@@ -188,6 +189,6 @@ where
     T: Serialize,
 {
     let msg_str = serde_json::to_string(&t).unwrap();
-    println!("send msg :{}", msg_str);
+    info!("send msg :{}", msg_str);
     sender.unbounded_send(Message::Text(msg_str)).unwrap();
 }
