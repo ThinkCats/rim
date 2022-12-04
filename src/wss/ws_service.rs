@@ -33,7 +33,9 @@ pub fn handle_ws_msg(msg: &MsgEvent, user_channel_map: &UserPeerMap, current_sen
         EventType::Heart => {}
         EventType::Ack => {
             println!("handle ack msg");
-            handle_client_ack(&msg.body, current_sender);
+            if valid_user_token(&msg.body, user_channel_map) {
+                handle_client_ack(&msg.body, current_sender);
+            }
         }
         EventType::Read => {}
     }
@@ -70,7 +72,11 @@ fn valid_user_token(body: &MsgBody, user_channel_map: &UserPeerMap) -> bool {
     let sender_uid = body.uid;
     let r = user_channel_map.lock().unwrap();
     let t = r.get(&sender_uid);
-    return t.is_some();
+    let valid = t.is_some();
+    if !valid {
+        println!("user token invalid for uid:{}", sender_uid);
+    }
+    return valid;
 }
 
 fn handle_msg(body: &MsgBody, user_channel_map: &UserPeerMap, current_sender: &Sender) {
@@ -144,7 +150,7 @@ fn save_new_msg(body: &MsgBody, group_user: Vec<GroupUser>) -> Result<u64> {
     result
 }
 
-fn handle_client_ack(body: &MsgBody,  current_sender: &Sender) {
+fn handle_client_ack(body: &MsgBody, current_sender: &Sender) {
     match body.msg_id {
         Some(m_id) => {
             let gid = body.gid;
