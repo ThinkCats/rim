@@ -49,7 +49,7 @@ pub struct MsgAck {
 }
 ```
 
-### example
+### msg example
 1. Login message 
 ```json
 {
@@ -74,6 +74,7 @@ server ack:
 ```
 
 2. Msg message
+
 ```json
 {
     "event": "Msg",
@@ -96,6 +97,7 @@ server ack:
 	"content": "Ok"
 }
 ```
+> client msg body is same as server msg body 
 
 3. Logout message
 ```json
@@ -119,3 +121,18 @@ server ack:
 	"content": "Ok"
 }
 ```
+
+4. client ack message
+```json
+{
+    "event": "Ack",
+    "body": {
+        "kind": "Text",
+        "content": "28", //server msg id
+        "uid": 1,
+        "clientMsgId": "72aebfd4aeefaaa"
+    }
+}
+```
+> no server ack msg
+
