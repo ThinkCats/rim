@@ -45,7 +45,7 @@ fn handle_login(body: &MsgBody, user_channel_map: &UserPeerMap, current_sender: 
     match user_token {
         Some(d) => {
             if uid == d.u_id {
-                send_ack(body, current_sender);
+                send_ack(body, None, current_sender);
                 user_channel_map
                     .lock()
                     .unwrap()
@@ -58,8 +58,11 @@ fn handle_login(body: &MsgBody, user_channel_map: &UserPeerMap, current_sender: 
     }
 }
 
-fn send_ack(body: &MsgBody, current_sender: &Sender) {
-    send_msg(current_sender, MsgAck::ack(body.client_msg_id.clone()));
+fn send_ack(body: &MsgBody, server_msg_id: Option<u64>, current_sender: &Sender) {
+    send_msg(
+        current_sender,
+        MsgAck::ack(body.client_msg_id.clone(), server_msg_id),
+    );
 }
 
 fn valid_user_token(body: &MsgBody, user_channel_map: &UserPeerMap) -> bool {
@@ -87,10 +90,11 @@ fn handle_msg(body: &MsgBody, user_channel_map: &UserPeerMap, current_sender: &S
         println!("[warn]save msg fail");
         return;
     }
+    let m_id = msg_id.unwrap();
     //send ack
-    send_ack(body, current_sender);
+    send_ack(body, Some(m_id), current_sender);
     //send to others
-    send_to_others(msg_id.unwrap(), body, group_user.clone(), user_channel_map);
+    send_to_others(m_id, body, group_user.clone(), user_channel_map);
 }
 
 fn send_to_others(

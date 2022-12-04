@@ -11,25 +11,44 @@ rim is an im server based on tokio-ws and rocket.
 ### struct
 Msg Struct
 ```rust
+#[derive(Serialize, Deserialize, Clone)]
 pub struct MsgEvent {
     //event: Login,Msg,Heart,Logout,Ack
     pub event: EventType,
     pub body: MsgBody,
 }
+
 ```
 
 MsgBody
 ```rust
+#[derive(Serialize, Deserialize, Clone)]
 pub struct MsgBody {
-    //message type: Text,RichText,Image...
+     //message type: Text,RichText,Image...
     pub kind: MessageType,
     pub uid: u64,
     pub gid: Option<u64>,
     pub content: String,
+    #[serde(rename(serialize = "clientMsgId", deserialize = "clientMsgId"))]
     pub client_msg_id: String,
+    #[serde(rename(serialize = "msgId", deserialize = "msgId"))]
     pub msg_id: Option<u64>,
 }
 ```
+
+Server Ack
+```rust
+#[derive(Serialize, Deserialize)]
+pub struct MsgAck {
+    #[serde(rename(serialize = "clientMsgId", deserialize = "clientMsgId"))]
+    pub client_msg_id: String,
+    #[serde(rename(serialize = "serverMsgId", deserialize = "serverMsgId"))]
+    pub server_msg_id: Option<u64>,
+    pub kind: EventType,
+    pub content: String,
+}
+```
+
 ### example
 1. Login message 
 ```json
@@ -41,6 +60,16 @@ pub struct MsgBody {
         "uid": 1,
         "clientMsgId": "72aebfd4aeef7634"
     }
+}
+```
+
+server ack:
+```json
+{
+	"clientMsgId": "72aebfd4aeef7634",
+	"serverMsgId": null,
+	"kind": "Ack",
+	"content": "Ok"
 }
 ```
 
@@ -58,6 +87,16 @@ pub struct MsgBody {
 }
 ```
 
+server ack:
+```json
+{
+	"clientMsgId": "badc6d33aebfd40ab3cda",
+	"serverMsgId": 28,
+	"kind": "Ack",
+	"content": "Ok"
+}
+```
+
 3. Logout message
 ```json
 {
@@ -68,5 +107,15 @@ pub struct MsgBody {
         "uid": 1,
         "clientMsgId": "72aebfd4aeef7634"
     }
+}
+```
+
+server ack:
+```json
+{
+	"clientMsgId": "72aebfd4aeef7634",
+	"serverMsgId": null,
+	"kind": "Ack",
+	"content": "Ok"
 }
 ```

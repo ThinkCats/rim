@@ -53,14 +53,17 @@ pub struct MsgEvent {
 pub struct MsgAck {
     #[serde(rename(serialize = "clientMsgId", deserialize = "clientMsgId"))]
     pub client_msg_id: String,
+    #[serde(rename(serialize = "serverMsgId", deserialize = "serverMsgId"))]
+    pub server_msg_id: Option<u64>,
     pub kind: EventType,
     pub content: String,
 }
 
 impl MsgAck {
-    pub fn ack(client_msg_id: String) -> MsgAck {
+    pub fn ack(client_msg_id: String, server_msg_id: Option<u64>) -> MsgAck {
         MsgAck {
             client_msg_id,
+            server_msg_id,
             kind: EventType::Ack,
             content: "Ok".into(),
         }
