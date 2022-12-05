@@ -9,6 +9,7 @@ use crate::{
     group::group_router::{
         group_create, group_get, group_update, group_user_change, group_user_get,
     },
+    message::message_router::chat_list,
     user::{
         user_router::{user_create, user_get, user_login},
         user_service::valid_token,
@@ -29,6 +30,7 @@ pub async fn launch_web() -> Result<(), rocket::Error> {
                 group_user_change
             ],
         )
+        .mount("/message", routes![chat_list])
         .attach(AdHoc::on_request("token_checker", |req, _| {
             Box::pin(async move {
                 println!(

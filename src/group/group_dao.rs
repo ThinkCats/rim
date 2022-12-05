@@ -46,13 +46,30 @@ pub fn update_group(form: &GroupUpdateForm) -> Result<bool> {
     Ok(true)
 }
 
-type GroupRow = (u64, String, String, u8, u64);
-pub fn select_group(uid: u64) -> Result<Vec<Group>> {
+pub fn select_group_by_ids(ids: Vec<u64>) -> Result<Vec<Group>> {
+    let ids_join = ids
+        .iter()
+        .map(|r| r.to_string())
+        .collect::<Vec<String>>()
+        .join(",");
+    let sql = format!(
+        "select id,name,avatar,mode,creator_uid from `groups` where id in ({})",
+        ids_join
+    );
+    select_group(sql)
+}
+
+pub fn select_group_by_u(uid: u64) -> Result<Vec<Group>> {
     let sql = format!(
         "select id,name,avatar,mode,creator_uid from `groups` where id in
          (select g_id from group_user where u_id = {})",
         uid
     );
+    select_group(sql)
+}
+
+type GroupRow = (u64, String, String, u8, u64);
+fn select_group(sql: String) -> Result<Vec<Group>> {
     let mut conn = get_conn();
     let result: Vec<GroupRow> = conn.query(sql).expect("query data error");
 

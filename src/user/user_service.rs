@@ -17,10 +17,11 @@ use super::{
 
 pub fn query_user(uid: u64) -> Option<User> {
     let user = select_user_by_uids(vec![uid]);
-    user.and_then(|r| {
-        let u = r[0].clone();
-        return Some(u);
-    })
+    if user.is_err() {
+        return None;
+    }
+    let u = user.unwrap();
+    Some(u[0].clone())
 }
 
 pub fn create_user(user: &User) -> Result<u64> {

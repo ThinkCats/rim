@@ -1,0 +1,30 @@
+"filename", "language", "Shell Script", "Markdown", "Rust", "comment", "blank", "total"
+"/Users/hehe/Workspace/rim/README.md", "Markdown", 0, 154, 0, 0, 18, 172
+"/Users/hehe/Workspace/rim/doc/shutdown.sh", "Shell Script", 1, 0, 0, 1, 0, 2
+"/Users/hehe/Workspace/rim/src/common/mod.rs", "Rust", 0, 0, 3, 0, 0, 3
+"/Users/hehe/Workspace/rim/src/common/resp.rs", "Rust", 0, 0, 49, 0, 9, 58
+"/Users/hehe/Workspace/rim/src/common/store.rs", "Rust", 0, 0, 33, 0, 10, 43
+"/Users/hehe/Workspace/rim/src/common/time.rs", "Rust", 0, 0, 7, 0, 3, 10
+"/Users/hehe/Workspace/rim/src/group/group_dao.rs", "Rust", 0, 0, 104, 0, 12, 116
+"/Users/hehe/Workspace/rim/src/group/group_model.rs", "Rust", 0, 0, 53, 0, 9, 62
+"/Users/hehe/Workspace/rim/src/group/group_router.rs", "Rust", 0, 0, 34, 0, 8, 42
+"/Users/hehe/Workspace/rim/src/group/group_service.rs", "Rust", 0, 0, 109, 2, 14, 125
+"/Users/hehe/Workspace/rim/src/group/mod.rs", "Rust", 0, 0, 4, 0, 0, 4
+"/Users/hehe/Workspace/rim/src/lib.rs", "Rust", 0, 0, 7, 0, 1, 8
+"/Users/hehe/Workspace/rim/src/main.rs", "Rust", 0, 0, 24, 0, 5, 29
+"/Users/hehe/Workspace/rim/src/message/message_dao.rs", "Rust", 0, 0, 178, 2, 16, 196
+"/Users/hehe/Workspace/rim/src/message/message_model.rs", "Rust", 0, 0, 150, 0, 17, 167
+"/Users/hehe/Workspace/rim/src/message/message_router.rs", "Rust", 0, 0, 5, 1, 4, 10
+"/Users/hehe/Workspace/rim/src/message/message_service.rs", "Rust", 0, 0, 0, 0, 1, 1
+"/Users/hehe/Workspace/rim/src/message/mod.rs", "Rust", 0, 0, 4, 0, 1, 5
+"/Users/hehe/Workspace/rim/src/route.rs", "Rust", 0, 0, 91, 1, 11, 103
+"/Users/hehe/Workspace/rim/src/user/mod.rs", "Rust", 0, 0, 4, 0, 0, 4
+"/Users/hehe/Workspace/rim/src/user/user_dao.rs", "Rust", 0, 0, 124, 0, 16, 140
+"/Users/hehe/Workspace/rim/src/user/user_model.rs", "Rust", 0, 0, 35, 0, 5, 40
+"/Users/hehe/Workspace/rim/src/user/user_router.rs", "Rust", 0, 0, 24, 0, 6, 30
+"/Users/hehe/Workspace/rim/src/user/user_service.rs", "Rust", 0, 0, 101, 3, 10, 114
+"/Users/hehe/Workspace/rim/src/ws.rs", "Rust", 0, 0, 91, 18, 23, 132
+"/Users/hehe/Workspace/rim/src/wss/mod.rs", "Rust", 0, 0, 1, 0, 0, 1
+"/Users/hehe/Workspace/rim/src/wss/ws_service.rs", "Rust", 0, 0, 226, 3, 17, 246
+"/Users/hehe/Workspace/rim/tests/util_test.rs", "Rust", 0, 0, 15, 2, 4, 21
+"Total", "-", 1, 154, 1476, 33, 220, 1884

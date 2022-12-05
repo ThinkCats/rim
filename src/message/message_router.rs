@@ -1,9 +1,14 @@
-use crate::common::resp::WebResponse;
+use rocket::{post, serde::json::Json};
 
-use super::message_model::ChatMessage;
+use crate::common::resp::{wrap_result, WebResponse};
 
-pub fn chat_list(uid: u64) -> WebResponse<Vec<ChatMessage>> {
-    //todo:  data should get from cache (like redis)  if too much msg stored in database
-    
-    todo!("")
+use super::{
+    message_model::{ChatListForm, ChatMessage},
+    message_service::query_chat_list_page,
+};
+
+#[post("/chat/list", data = "<query_form>")]
+pub fn chat_list(query_form: Json<ChatListForm>) -> WebResponse<Vec<ChatMessage>> {
+    let result = query_chat_list_page(&query_form);
+    wrap_result(result)
 }

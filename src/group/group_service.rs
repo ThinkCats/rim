@@ -7,7 +7,8 @@ use crate::{
 
 use super::{
     group_dao::{
-        self, delete_group_user, insert_group, insert_group_user, select_group, select_group_user,
+        self, delete_group_user, insert_group, insert_group_user, select_group_by_u,
+        select_group_user,
     },
     group_model::{
         Group, GroupCreateForm, GroupUpdateForm, GroupUser, GroupUserChangeForm, GroupUserDTS,
@@ -23,7 +24,7 @@ pub fn update_group(form: &GroupUpdateForm) -> Result<bool> {
 }
 
 pub fn query_group(uid: u64) -> Result<Vec<Group>> {
-    select_group(uid)
+    select_group_by_u(uid)
 }
 
 pub fn query_group_user(gid: u64) -> Result<Vec<GroupUserDTS>> {
@@ -34,7 +35,7 @@ pub fn query_group_user(gid: u64) -> Result<Vec<GroupUserDTS>> {
 
     let uids = group_users.iter().map(|d| d.uid).collect::<Vec<u64>>();
     let users = select_user_by_uids(uids);
-    if users.is_none() {
+    if users.is_err() {
         return Ok(Vec::new());
     }
 

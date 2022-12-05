@@ -75,7 +75,7 @@ impl MsgAck {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct MessageInfo {
     pub id: Option<u64>,
     pub kind: String,
@@ -160,4 +160,17 @@ pub struct ChatMessage {
     pub group: Group,
     pub msg: MessageInfo,
     pub user: User,
+}
+
+impl ChatMessage {
+    pub fn from(group: Group, msg: MessageInfo, user: User) -> ChatMessage {
+        ChatMessage { group, msg, user }
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct ChatListForm {
+    pub uid: u64,
+    pub page: u32,
+    pub size: u32,
 }

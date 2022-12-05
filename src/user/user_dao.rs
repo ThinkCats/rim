@@ -8,7 +8,7 @@ use super::user_model::{User, UserToken};
 
 type UserRow = (u64, String, String, String, String, String);
 
-pub fn select_user_by_uids(uids: Vec<u64>) -> Option<Vec<User>> {
+pub fn select_user_by_uids(uids: Vec<u64>) -> Result<Vec<User>> {
     let uids_join = uids
         .iter()
         .map(|r| r.to_string())
@@ -27,18 +27,17 @@ pub fn select_user_by_account(account: String) -> Option<User> {
         "select id,name,avatar,email,account,password from `user` where account = '{}'",
         account
     );
-    let users = select_user(sql);
-    users.and_then(|r| Some(r[0].clone()))
-}
-
-fn select_user(sql: String) -> Option<Vec<User>> {
-    let mut conn = get_conn();
-    let result: Vec<UserRow> = conn.query(sql).unwrap();
-    info!("result:{:?}", result);
-    if result.is_empty() {
+    let users = select_user(sql).unwrap();
+    if users.is_empty() {
         return None;
     }
 
+    Some(users[0].clone())
+}
+
+fn select_user(sql: String) -> Result<Vec<User>> {
+    let mut conn = get_conn();
+    let result: Vec<UserRow> = conn.query(sql).unwrap();
     let d = result
         .iter()
         .map(|r| User {
@@ -51,7 +50,7 @@ fn select_user(sql: String) -> Option<Vec<User>> {
         })
         .collect::<Vec<User>>();
 
-    Some(d)
+    Ok(d)
 }
 
 pub fn insert_user(user: &User) -> Result<u64> {
@@ -86,8 +85,8 @@ pub fn select_user_token_by_uid(uid: u64) -> Option<UserToken> {
     );
     let user_token = select_user_token(sql);
     match user_token {
-        Some(d) => {Some(d[0].clone())},
-        None => {None},
+        Some(d) => Some(d[0].clone()),
+        None => None,
     }
 }
 
@@ -98,9 +97,9 @@ pub fn select_user_token_by_token(token: String) -> Option<UserToken> {
     );
     let user_token = select_user_token(sql);
     match user_token {
-        Some(d) => {Some(d[0].clone())},
-        None => {None},
-    } 
+        Some(d) => Some(d[0].clone()),
+        None => None,
+    }
 }
 
 fn select_user_token(sql: String) -> Option<Vec<UserToken>> {
