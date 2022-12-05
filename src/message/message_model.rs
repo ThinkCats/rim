@@ -3,7 +3,11 @@ use std::fmt::Display;
 use chrono::Local;
 use serde::{Deserialize, Serialize};
 
-use crate::{common::store::{STATUS_FALSE, STATUS_TRUE}, group::group_model::Group, user::user_model::User};
+use crate::{
+    common::store::{STATUS_FALSE, STATUS_TRUE},
+    group::group_model::Group,
+    user::user_model::User,
+};
 
 #[derive(Serialize, Deserialize, Clone)]
 pub enum EventType {
@@ -142,6 +146,14 @@ impl MessageInbox {
     }
 }
 
+#[derive(Serialize, Deserialize, Clone)]
+pub struct ChatList {
+    pub id: Option<u64>,
+    pub g_id: u64,
+    pub u_id: u64,
+    pub last_msg_id: u64,
+    pub update_time: String,
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct ChatMessage {

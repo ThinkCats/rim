@@ -1,10 +1,10 @@
 use anyhow::{Ok, Result};
-use chrono::NaiveDateTime;
-use mysql::{prelude::Queryable, TxOpts};
+use chrono::{Local, NaiveDateTime};
+use mysql::{prelude::Queryable, Transaction, TxOpts};
 
 use crate::common::{store::get_conn, time::format_time};
 
-use super::message_model::{MessageInbox, MessageInfo};
+use super::message_model::{ChatList, MessageInbox, MessageInfo};
 
 pub fn insert_messages(msg_info: &MessageInfo, msg_inboxs: Vec<MessageInbox>) -> Result<u64> {
     let mut conn = get_conn();
@@ -39,23 +39,79 @@ pub fn insert_messages(msg_info: &MessageInfo, msg_inboxs: Vec<MessageInbox>) ->
     )
     .expect("insert message inbox error");
 
-
-
-    // todo: check user chat list existed, insert or update chat list
-    // let chat_list_sql = "insert into chat_list(g_id,u_id,last_msg_id) values(?,?,?)";
-    // tx.exec(chat_list_sql, (
-    //     &msg_info.g_id,
-        
-    // ));
+    for ele in msg_inboxs {
+        let chat_list = select_chat_list(ele.g_id, ele.receiver_uid);
+        match chat_list {
+            Some(d) => {
+                //update
+                let _ = update_chat_list(&mut tx, d.id.unwrap(), msg_id);
+            }
+            None => {
+                //insert
+                let list = ChatList {
+                    id: None,
+                    g_id: ele.g_id,
+                    u_id: ele.receiver_uid,
+                    last_msg_id: msg_id,
+                    update_time: format_time(Local::now().naive_local()),
+                };
+                let _ = insert_chat_list_with_trans(&mut tx, list);
+            }
+        }
+    }
 
     tx.commit().expect("commit message tx error");
 
     Ok(msg_id)
 }
 
+type ChatListRow = (u64, u64, u64, u64, NaiveDateTime);
+fn select_chat_list(gid: u64, uid: u64) -> Option<ChatList> {
+    let sql = format!(
+        "select id,g_id,u_id,last_msg_id,update_time from chat_list where g_id={} and u_id ={} order by update_time desc",
+        gid, uid
+    );
+    let result: Vec<ChatListRow> = get_conn().query(sql).expect("query chat list error");
+    let list = result
+        .iter()
+        .map(|r| ChatList {
+            id: Some(r.0),
+            g_id: r.1,
+            u_id: r.2,
+            last_msg_id: r.3,
+            update_time: format_time(r.4),
+        })
+        .collect::<Vec<ChatList>>();
+    if list.is_empty() {
+        return None;
+    }
+    return Some(list[0].clone());
+}
 
-// todo: select chat list
-//fn select_chat_list(gid:u64,uid: u64) -> Vec<>
+fn insert_chat_list_with_trans(tx: &mut Transaction, chat_list: ChatList) -> Result<u64> {
+    let sql = "insert into chat_list(g_id,u_id,last_msg_id,update_time) values (?,?,?,?)";
+    let _: Vec<u64> = tx
+        .exec(
+            sql,
+            (
+                &chat_list.g_id,
+                &chat_list.u_id,
+                &chat_list.last_msg_id,
+                &chat_list.update_time,
+            ),
+        )
+        .expect("insert chat list error");
+    Ok(tx.last_insert_id().unwrap())
+}
+
+fn update_chat_list(tx: &mut Transaction, id: u64, last_msg_id: u64) -> Result<bool> {
+    let sql = "update chat_list set last_msg_id = ? where id = ?";
+    let _: Vec<u64> = tx
+        .exec(sql, (&last_msg_id, &id))
+        .expect("update chat list error");
+
+    Ok(true)
+}
 
 type MsgInboxRow = (
     u64,
