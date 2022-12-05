@@ -2,10 +2,6 @@
 
 rim is an im server based on tokio-ws and rocket.
 
-## sequence diagram
-![diagram](doc/protocol.drawio.png)
-
-
 ## protocol
 
 ### struct
