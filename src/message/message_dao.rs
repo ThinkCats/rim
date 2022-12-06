@@ -4,7 +4,7 @@ use mysql::{prelude::Queryable, Transaction, TxOpts};
 
 use crate::common::{store::get_conn, time::format_time};
 
-use super::message_model::{ChatList, ChatListForm, MessageInbox, MessageInfo};
+use super::message_model::{ChatList, ChatListForm, MessageForm, MessageInbox, MessageInfo};
 
 pub fn insert_messages(msg_info: &MessageInfo, msg_inboxs: Vec<MessageInbox>) -> Result<u64> {
     let mut conn = get_conn();
@@ -65,16 +65,6 @@ pub fn insert_messages(msg_info: &MessageInfo, msg_inboxs: Vec<MessageInbox>) ->
     Ok(msg_id)
 }
 
-type MessageRow = (
-    u64,
-    String,
-    String,
-    u64,
-    u64,
-    String,
-    NaiveDateTime,
-    NaiveDateTime,
-);
 pub fn select_msg_by_ids(ids: Vec<u64>) -> Result<Vec<MessageInfo>> {
     let ids_join = ids
         .iter()
@@ -86,6 +76,20 @@ pub fn select_msg_by_ids(ids: Vec<u64>) -> Result<Vec<MessageInfo>> {
          where id in ({})",
         ids_join
     );
+    select_msg(sql)
+}
+
+type MessageRow = (
+    u64,
+    String,
+    String,
+    u64,
+    u64,
+    String,
+    NaiveDateTime,
+    NaiveDateTime,
+);
+pub fn select_msg(sql: String) -> Result<Vec<MessageInfo>> {
     let result: Vec<MessageRow> = get_conn().query(sql).expect("select message error");
     let d = result
         .iter()
@@ -167,17 +171,6 @@ fn update_chat_list(tx: &mut Transaction, id: u64, last_msg_id: u64) -> Result<b
     Ok(true)
 }
 
-type MsgInboxRow = (
-    u64,
-    u64,
-    u64,
-    u64,
-    u8,
-    u8,
-    Option<NaiveDateTime>,
-    NaiveDateTime,
-    NaiveDateTime,
-);
 pub fn select_msg_inbox_for_gmr(gid: u64, mid: u64, ruid: u64) -> Option<MessageInbox> {
     let sql = format!(
         "select id,g_id,m_id,receiver_uid,send_status,read_status,read_time,create_time,update_time
@@ -195,20 +188,37 @@ pub fn select_msg_inbox_for_gmr(gid: u64, mid: u64, ruid: u64) -> Option<Message
     Some(datas[0].clone())
 }
 
-pub fn select_msg_inbox_for_user(
-    ruid: u64,
-    page: u32,
-    page_size: u32,
-) -> Result<Vec<MessageInbox>> {
-    let start_idx = (page - 1) * page_size;
+pub fn select_msg_inbox_for_u_page(query: &ChatListForm) -> Result<Vec<MessageInbox>> {
+    let start_idx = (&query.page - 1) * &query.size;
     let sql = format!(
         "select id,g_id,m_id,receiver_uid,send_status,read_status,read_time,create_time,update_time
          from message_inbox where  receiver_uid = {} order by id desc limit {},{}",
-        ruid, start_idx, page_size
+        &query.uid, start_idx, &query.size
     );
     select_msg_inbox(sql)
 }
 
+pub fn select_msg_inbox_for_gu_page(query: &MessageForm) -> Result<Vec<MessageInbox>> {
+    let start_idx = (&query.page - 1) * &query.size;
+    let sql = format!(
+        "select id,g_id,m_id,receiver_uid,send_status,read_status,read_time,create_time,update_time
+         from message_inbox where g_id= {} and receiver_uid = {} order by id desc limit {},{}",
+        &query.gid, &query.uid, start_idx, &query.size
+    );
+    select_msg_inbox(sql)
+}
+
+type MsgInboxRow = (
+    u64,
+    u64,
+    u64,
+    u64,
+    u8,
+    u8,
+    Option<NaiveDateTime>,
+    NaiveDateTime,
+    NaiveDateTime,
+);
 fn select_msg_inbox(sql: String) -> Result<Vec<MessageInbox>> {
     let result: Vec<MsgInboxRow> = get_conn().query(sql).expect("query msg inbox error");
     let data = result

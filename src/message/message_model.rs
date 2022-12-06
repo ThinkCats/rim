@@ -80,10 +80,14 @@ pub struct MessageInfo {
     pub id: Option<u64>,
     pub kind: String,
     pub content: String,
+    #[serde(rename(serialize = "gid", deserialize = "gid"))]
     pub g_id: u64,
+    #[serde(rename(serialize = "uid", deserialize = "uid"))]
     pub sender_uid: u64,
     pub client_msg_id: String,
+    #[serde(rename(serialize = "createTime", deserialize = "createTime"))]
     pub create_time: String,
+    #[serde(rename(serialize = "updateTime", deserialize = "updateTime"))]
     pub update_time: String,
 }
 
@@ -170,6 +174,14 @@ impl ChatMessage {
 
 #[derive(Serialize, Deserialize)]
 pub struct ChatListForm {
+    pub uid: u64,
+    pub page: u32,
+    pub size: u32,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct MessageForm {
+    pub gid: u64,
     pub uid: u64,
     pub page: u32,
     pub size: u32,
