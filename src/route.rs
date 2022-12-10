@@ -30,21 +30,25 @@ pub async fn launch_web() -> Result<(), rocket::Error> {
                 group_user_change
             ],
         )
-        .mount("/message", routes![chat_list,history])
-        .attach(AdHoc::on_request("token_checker", |req, _| {
-            Box::pin(async move {
-                println!(
-                    "token checker start on request:{}",
-                    req.uri().path().to_string()
-                );
-                check_header_token(req);
-            })
-        }))
+        .mount("/message", routes![chat_list, history])
+        .attach(token_checker_adhoc())
         .register("/", catchers![not_found, server_error])
         .launch()
         .await?;
 
     Ok(())
+}
+
+fn token_checker_adhoc() -> AdHoc {
+    AdHoc::on_request("token_checker", |req, _| {
+        Box::pin(async move {
+            println!(
+                "token checker start on request:{}",
+                req.uri().path().to_string()
+            );
+            check_header_token(req);
+        })
+    })
 }
 
 #[get("/")]
