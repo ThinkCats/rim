@@ -191,8 +191,10 @@ pub fn select_msg_inbox_for_gmr(gid: u64, mid: u64, ruid: u64) -> Option<Message
 pub fn select_msg_inbox_for_u_page(query: &ChatListForm) -> Result<Vec<MessageInbox>> {
     let start_idx = (&query.page - 1) * &query.size;
     let sql = format!(
-        "select id,g_id,m_id,receiver_uid,send_status,read_status,read_time,create_time,update_time
-         from message_inbox where  receiver_uid = {} order by id desc limit {},{}",
+        "select mi.id,mi.g_id,mi.m_id,mi.receiver_uid,mi.send_status,mi.read_status,mi.read_time,
+         mi.create_time,mi.update_time,m.sender_uid
+         from message_inbox mi left join message m on mi.m_id = m.id
+         where mi.receiver_uid = {} order by mi.id desc limit {},{}",
         &query.uid, start_idx, &query.size
     );
     select_msg_inbox(sql)
@@ -201,8 +203,10 @@ pub fn select_msg_inbox_for_u_page(query: &ChatListForm) -> Result<Vec<MessageIn
 pub fn select_msg_inbox_for_gu_page(query: &MessageForm) -> Result<Vec<MessageInbox>> {
     let start_idx = (&query.page - 1) * &query.size;
     let sql = format!(
-        "select id,g_id,m_id,receiver_uid,send_status,read_status,read_time,create_time,update_time
-         from message_inbox where g_id= {} and receiver_uid = {} order by id desc limit {},{}",
+        "select mi.id,mi.g_id,mi.m_id,mi.receiver_uid,mi.send_status,mi.read_status,mi.read_time,
+         mi.create_time,mi.update_time,m.sender_uid
+         from message_inbox mi left join message m on mi.m_id = m.id
+         where mi.g_id= {} and mi.receiver_uid = {} order by mi.id desc limit {},{}",
         &query.gid, &query.uid, start_idx, &query.size
     );
     select_msg_inbox(sql)
@@ -218,6 +222,7 @@ type MsgInboxRow = (
     Option<NaiveDateTime>,
     NaiveDateTime,
     NaiveDateTime,
+    u64,
 );
 fn select_msg_inbox(sql: String) -> Result<Vec<MessageInbox>> {
     let result: Vec<MsgInboxRow> = get_conn().query(sql).expect("query msg inbox error");
@@ -237,6 +242,7 @@ fn select_msg_inbox(sql: String) -> Result<Vec<MessageInbox>> {
             },
             create_time: format_time(d.7),
             update_time: format_time(d.8),
+            sender_uid: d.9,
         })
         .collect::<Vec<MessageInbox>>();
     Ok(data)

@@ -11,7 +11,8 @@ use crate::{
     group::{group_dao::select_group_user, group_model::GroupUser, group_service::user_in_group},
     message::{
         message_dao::{
-            insert_messages, select_msg_inbox_for_gmr, update_inbox_read_status, update_inbox_send_status,
+            insert_messages, select_msg_inbox_for_gmr, update_inbox_read_status,
+            update_inbox_send_status,
         },
         message_model::{
             EventType, MessageInbox, MessageInfo, MessageType, MsgAck, MsgBody, MsgEvent,
@@ -193,7 +194,7 @@ fn save_new_msg(body: &MsgBody, group_user: Vec<GroupUser>) -> Result<u64> {
     let msg_info = MessageInfo::from(body);
     let msg_inboxs = group_user
         .iter()
-        .map(|r| MessageInbox::from(body, &msg_info, r.uid, r.uid == body.uid))
+        .map(|r| MessageInbox::from(body, &msg_info, r.uid, body.uid, r.uid == body.uid))
         .collect::<Vec<MessageInbox>>();
     let result = insert_messages(&msg_info, msg_inboxs);
     if result.is_err() {

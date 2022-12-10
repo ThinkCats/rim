@@ -113,6 +113,7 @@ pub struct MessageInbox {
     pub g_id: u64,
     pub m_id: Option<u64>,
     pub receiver_uid: u64,
+    pub sender_uid: u64,
     pub send_status: u8,
     pub read_status: u8,
     pub read_time: Option<String>,
@@ -125,6 +126,7 @@ impl MessageInbox {
         msg_body: &MsgBody,
         msg_info: &MessageInfo,
         receiver_uid: u64,
+        sender_uid: u64,
         self_receiver: bool,
     ) -> MessageInbox {
         let now = Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
@@ -133,6 +135,7 @@ impl MessageInbox {
             g_id: msg_body.gid.expect("gid should not be null"),
             m_id: msg_info.id,
             receiver_uid,
+            sender_uid,
             send_status: if self_receiver {
                 STATUS_TRUE
             } else {

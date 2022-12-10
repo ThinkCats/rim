@@ -39,7 +39,7 @@ fn convert_inbox_to_chat_list(msg_inbox_list: Vec<MessageInbox>) -> Vec<ChatList
         .map(|r| ChatList {
             id: None,
             g_id: r.g_id,
-            u_id: r.receiver_uid,
+            u_id: r.sender_uid,
             last_msg_id: r.m_id.unwrap(),
             update_time: "".into(),
         })
@@ -76,6 +76,8 @@ fn query_chat_message(chat_list: Vec<ChatList>) -> Result<Vec<ChatMessage>> {
         let chat_message = ChatMessage::from((*group).clone(), (*msg).clone(), (*user).clone());
         result.push(chat_message);
     }
+
+    result.sort_by(|a,b| a.msg.id.unwrap().cmp(&b.msg.id.unwrap()));
 
     Ok(result)
 }
