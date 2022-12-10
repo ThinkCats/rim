@@ -19,9 +19,9 @@ use crate::{
 pub async fn launch_web() -> Result<(), rocket::Error> {
     let _rocket = rocket::build()
         .mount("/", routes![index, login_need])
-        .mount("/user", routes![user_get, user_create, user_login])
+        .mount("/api/user", routes![user_get, user_create, user_login])
         .mount(
-            "/group",
+            "/api/group",
             routes![
                 group_create,
                 group_update,
@@ -30,7 +30,7 @@ pub async fn launch_web() -> Result<(), rocket::Error> {
                 group_user_change
             ],
         )
-        .mount("/message", routes![chat_list, history])
+        .mount("/api/message", routes![chat_list, history])
         .attach(token_checker_adhoc())
         .register("/", catchers![not_found, server_error])
         .launch()
