@@ -202,8 +202,10 @@ pub fn select_unread(gids: Vec<u64>, uid: u64) -> Result<Vec<UserGroupUnread>> {
 
 pub fn select_msg_inbox_for_gmr(gid: u64, mid: u64, ruid: u64) -> Option<MessageInbox> {
     let sql = format!(
-        "select id,g_id,m_id,receiver_uid,send_status,read_status,read_time,create_time,update_time
-         from message_inbox where g_id = {} and m_id = {} and receiver_uid = {}",
+        "select mi.id,mi.g_id,mi.m_id,mi.receiver_uid,mi.send_status,mi.read_status,mi.read_time,
+        mi.create_time,mi.update_time,m.sender_uid
+        from message_inbox mi left join message m on mi.m_id = m.id
+        where mi.g_id = {} and mi.m_id = {} and mi.receiver_uid = {}",
         gid, mid, ruid
     );
     let result = select_msg_inbox(sql);

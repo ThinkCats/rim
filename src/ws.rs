@@ -123,8 +123,8 @@ fn parse_msg(msg: &str) -> Option<MsgEvent> {
             }
             return Some(event);
         }
-        Err(_) => {
-            error!("find error, do nothing");
+        Err(e) => {
+            error!("find error, do nothing:{}",e);
             None
         }
     }
