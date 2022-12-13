@@ -1,8 +1,11 @@
 use anyhow::{Ok, Result};
-use chrono::{Local, NaiveDateTime};
+use chrono::NaiveDateTime;
 use mysql::{prelude::Queryable, Transaction, TxOpts};
 
-use crate::common::{store::get_conn, time::format_time};
+use crate::common::{
+    store::get_conn,
+    time::{format_time, now_time_str},
+};
 
 use super::message_model::{
     ChatList, ChatListForm, MessageForm, MessageInbox, MessageInfo, UserGroupUnread,
@@ -55,7 +58,7 @@ pub fn insert_messages(msg_info: &MessageInfo, msg_inboxs: Vec<MessageInbox>) ->
                     g_id: ele.g_id,
                     u_id: ele.receiver_uid,
                     last_msg_id: msg_id,
-                    update_time: format_time(Local::now().naive_local()),
+                    update_time: now_time_str(),
                 };
                 let _ = insert_chat_list_with_trans(&mut tx, list);
             }
@@ -286,6 +289,19 @@ pub fn update_inbox_read_status(id: u64, read_status: u8, read_time: String) -> 
     let sql = "update message_inbox set read_status = ?, read_time = ? where id= ?";
     let _: Vec<u64> = get_conn()
         .exec(sql, (&read_status, &read_time, &id))
-        .expect("update send status error");
+        .expect("update read status error");
+    Ok(true)
+}
+
+pub fn update_inbox_read_status_batch(
+    gid: u64,
+    uid: u64,
+    read_status: u8,
+    read_time: String,
+) -> Result<bool> {
+    let sql = "update message_inbox set read_status = ?, read_time = ? where g_id = ? and receiver_uid = ?";
+    let _: Vec<u64> = get_conn()
+        .exec(sql, (&read_status, &read_time, &gid, &uid))
+        .expect("batch update read status error");
     Ok(true)
 }

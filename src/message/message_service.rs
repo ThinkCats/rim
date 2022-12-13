@@ -1,10 +1,19 @@
 use anyhow::{Ok, Result};
 
-use crate::{group::group_dao::select_group_by_ids, user::user_dao::select_user_by_uids};
+use crate::{
+    common::{store::STATUS_TRUE, time::now_time_str},
+    group::group_dao::select_group_by_ids,
+    user::user_dao::select_user_by_uids,
+};
 
 use super::{
-    message_dao::{select_chat_list_page, select_msg_by_ids, select_msg_inbox_for_gu_page, select_unread},
-    message_model::{ChatList, ChatListForm, ChatMessage, MessageForm, MessageInbox},
+    message_dao::{
+        select_chat_list_page, select_msg_by_ids, select_msg_inbox_for_gu_page, select_unread,
+        update_inbox_read_status_batch,
+    },
+    message_model::{
+        ChatGroupReadForm, ChatList, ChatListForm, ChatMessage, MessageForm, MessageInbox,
+    },
 };
 
 pub fn query_chat_list_page(form: &ChatListForm) -> Result<Vec<ChatMessage>> {
@@ -24,7 +33,11 @@ pub fn query_chat_list_page(form: &ChatListForm) -> Result<Vec<ChatMessage>> {
 
     let mut result = Vec::new();
     for ele in &msgs {
-        let unread = unread_info.iter().find(|d| d.gid == ele.msg.g_id).and_then(|d| Some(d.unread)).unwrap();
+        let unread = unread_info
+            .iter()
+            .find(|d| d.gid == ele.msg.g_id)
+            .and_then(|d| Some(d.unread))
+            .unwrap_or(0);
         let mut tmp = (*ele).clone();
         tmp.unread = Some(unread);
         result.push(tmp);
@@ -44,6 +57,10 @@ pub fn query_chat_group_msg_history(form: &MessageForm) -> Result<Vec<ChatMessag
     }
     let chat_list = convert_inbox_to_chat_list(msg_inbox_list);
     query_chat_message(chat_list)
+}
+
+pub fn update_chat_group_read(form: &ChatGroupReadForm) -> Result<bool> {
+    update_inbox_read_status_batch(form.gid, form.uid, STATUS_TRUE, now_time_str())
 }
 
 fn convert_inbox_to_chat_list(msg_inbox_list: Vec<MessageInbox>) -> Vec<ChatList> {
@@ -86,11 +103,12 @@ fn query_chat_message(chat_list: Vec<ChatList>) -> Result<Vec<ChatMessage>> {
             .iter()
             .find(|r| r.id.unwrap() == ele.last_msg_id)
             .expect("msg info not found in chat list");
-        let chat_message = ChatMessage::from((*group).clone(), (*msg).clone(), (*user).clone(), None);
+        let chat_message =
+            ChatMessage::from((*group).clone(), (*msg).clone(), (*user).clone(), None);
         result.push(chat_message);
     }
 
-    result.sort_by(|a,b| a.msg.id.unwrap().cmp(&b.msg.id.unwrap()));
+    result.sort_by(|a, b| a.msg.id.unwrap().cmp(&b.msg.id.unwrap()));
 
     Ok(result)
 }

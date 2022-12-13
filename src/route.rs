@@ -9,7 +9,7 @@ use crate::{
     group::group_router::{
         group_create, group_get, group_update, group_user_change, group_user_get,
     },
-    message::message_router::{chat_list, history},
+    message::message_router::{chat_group_read, chat_list, history},
     user::{
         user_router::{user_create, user_get, user_login},
         user_service::valid_token,
@@ -30,7 +30,7 @@ pub async fn launch_web() -> Result<(), rocket::Error> {
                 group_user_change
             ],
         )
-        .mount("/api/message", routes![chat_list, history])
+        .mount("/api/message", routes![chat_list, history, chat_group_read])
         .attach(token_checker_adhoc())
         .register("/", catchers![not_found, server_error])
         .launch()

@@ -1,5 +1,4 @@
 use anyhow::Result;
-use chrono::Local;
 use futures::channel::mpsc::UnboundedSender;
 
 use log::{error, info};
@@ -7,7 +6,7 @@ use serde::Serialize;
 use tokio_tungstenite::tungstenite::Message;
 
 use crate::{
-    common::{store::STATUS_TRUE, time::format_time},
+    common::{store::STATUS_TRUE, time::now_time_str},
     group::{group_dao::select_group_user, group_model::GroupUser, group_service::user_in_group},
     message::{
         message_dao::{
@@ -105,8 +104,7 @@ fn update_inbox_read_status_ok(gid: u64, msg_id: u64, rev_uid: u64) {
     let msg_inbox = select_msg_inbox_for_gmr(gid, msg_id, rev_uid);
     match msg_inbox {
         Some(inbox) => {
-            let now = format_time(Local::now().naive_local());
-            let _ = update_inbox_read_status(inbox.id.unwrap(), STATUS_TRUE, now);
+            let _ = update_inbox_read_status(inbox.id.unwrap(), STATUS_TRUE, now_time_str());
         }
         None => {
             error!("[warn] can not find msg inbox when update send status")

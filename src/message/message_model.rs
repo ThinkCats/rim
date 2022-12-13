@@ -202,3 +202,9 @@ pub struct MessageForm {
     pub page: u32,
     pub size: u32,
 }
+
+#[derive(Serialize, Deserialize)]
+pub struct ChatGroupReadForm {
+    pub gid: u64,
+    pub uid: u64, 
+}
