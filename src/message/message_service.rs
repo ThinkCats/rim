@@ -3,21 +3,34 @@ use anyhow::{Ok, Result};
 use crate::{group::group_dao::select_group_by_ids, user::user_dao::select_user_by_uids};
 
 use super::{
-    message_dao::{select_chat_list_page, select_msg_by_ids, select_msg_inbox_for_gu_page},
+    message_dao::{select_chat_list_page, select_msg_by_ids, select_msg_inbox_for_gu_page, select_unread},
     message_model::{ChatList, ChatListForm, ChatMessage, MessageForm, MessageInbox},
 };
 
 pub fn query_chat_list_page(form: &ChatListForm) -> Result<Vec<ChatMessage>> {
     let chat_list = select_chat_list_page(form);
-    if chat_list.is_err() {
-        return Ok(Vec::new());
-    }
-    let list = chat_list.unwrap();
+    let list = chat_list?;
     if list.is_empty() {
         return Ok(Vec::new());
     }
+    let chat_messages: Result<Vec<ChatMessage>> = query_chat_message(list);
+    let msgs = chat_messages?;
 
-    query_chat_message(list)
+    let mut gids = Vec::new();
+    for ele in &msgs {
+        gids.push(ele.msg.g_id);
+    }
+    let unread_info = select_unread(gids, form.uid)?;
+
+    let mut result = Vec::new();
+    for ele in &msgs {
+        let unread = unread_info.iter().find(|d| d.gid == ele.msg.g_id).and_then(|d| Some(d.unread)).unwrap();
+        let mut tmp = (*ele).clone();
+        tmp.unread = Some(unread);
+        result.push(tmp);
+    }
+
+    Ok(result)
 }
 
 pub fn query_chat_group_msg_history(form: &MessageForm) -> Result<Vec<ChatMessage>> {
@@ -73,7 +86,7 @@ fn query_chat_message(chat_list: Vec<ChatList>) -> Result<Vec<ChatMessage>> {
             .iter()
             .find(|r| r.id.unwrap() == ele.last_msg_id)
             .expect("msg info not found in chat list");
-        let chat_message = ChatMessage::from((*group).clone(), (*msg).clone(), (*user).clone());
+        let chat_message = ChatMessage::from((*group).clone(), (*msg).clone(), (*user).clone(), None);
         result.push(chat_message);
     }
 

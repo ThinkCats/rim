@@ -162,17 +162,30 @@ pub struct ChatList {
     pub update_time: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct ChatMessage {
     pub group: Group,
     pub msg: MessageInfo,
     pub user: User,
+    pub unread: Option<u32>,
 }
 
 impl ChatMessage {
-    pub fn from(group: Group, msg: MessageInfo, user: User) -> ChatMessage {
-        ChatMessage { group, msg, user }
+    pub fn from(group: Group, msg: MessageInfo, user: User, unread: Option<u32>) -> ChatMessage {
+        ChatMessage {
+            group,
+            msg,
+            user,
+            unread,
+        }
     }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct UserGroupUnread {
+    pub gid: u64,
+    pub uid: u64,
+    pub unread: u32,
 }
 
 #[derive(Serialize, Deserialize)]

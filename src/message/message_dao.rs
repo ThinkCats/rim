@@ -4,7 +4,9 @@ use mysql::{prelude::Queryable, Transaction, TxOpts};
 
 use crate::common::{store::get_conn, time::format_time};
 
-use super::message_model::{ChatList, ChatListForm, MessageForm, MessageInbox, MessageInfo};
+use super::message_model::{
+    ChatList, ChatListForm, MessageForm, MessageInbox, MessageInfo, UserGroupUnread,
+};
 
 pub fn insert_messages(msg_info: &MessageInfo, msg_inboxs: Vec<MessageInbox>) -> Result<u64> {
     let mut conn = get_conn();
@@ -169,6 +171,30 @@ fn update_chat_list(tx: &mut Transaction, id: u64, last_msg_id: u64) -> Result<b
         .expect("update chat list error");
 
     Ok(true)
+}
+
+type UnreadRow = (u64, u32);
+pub fn select_unread(gids: Vec<u64>, uid: u64) -> Result<Vec<UserGroupUnread>> {
+    let gid_ins = gids
+        .iter()
+        .map(|r| r.to_string())
+        .collect::<Vec<String>>()
+        .join(",");
+    let sql = format!(
+        "select g_id, count(1) as unread from rim.message_inbox
+         where read_status = 2 and receiver_uid = {} and g_id in ({}) group by g_id",
+        uid, gid_ins
+    );
+    let result: Vec<UnreadRow> = get_conn().query(sql).expect("query unread error");
+    let result = result
+        .iter()
+        .map(|r| UserGroupUnread {
+            gid: r.0,
+            uid,
+            unread: r.1,
+        })
+        .collect::<Vec<UserGroupUnread>>();
+    Ok(result)
 }
 
 pub fn select_msg_inbox_for_gmr(gid: u64, mid: u64, ruid: u64) -> Option<MessageInbox> {
