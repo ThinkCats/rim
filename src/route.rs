@@ -17,7 +17,9 @@ use crate::{
 };
 
 pub async fn launch_web() -> Result<(), rocket::Error> {
-    let _rocket = rocket::build()
+    let figment = rocket::Config::figment()
+        .merge(("port", 8000));
+    let _rocket = rocket::custom(figment)
         .mount("/", routes![index, login_need])
         .mount(
             "/api/user",
