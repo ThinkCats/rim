@@ -24,6 +24,15 @@ pub fn query_user(uid: u64) -> Option<User> {
     Some(u[0].clone())
 }
 
+pub fn query_user_by_token(token: String) -> Option<User> {
+    let user_token = select_user_token_by_token(token);
+    if user_token.is_none() {
+        return None;
+    }
+    let uid = user_token.unwrap().u_id;
+    return query_user(uid);
+}
+
 pub fn create_user(user: &User) -> Result<u64> {
     if has_account(&user.account) {
         bail!("Account Existed")
