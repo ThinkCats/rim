@@ -68,7 +68,7 @@ fn login_need() -> WebResponse<String> {
 
 fn check_header_token(req: &mut Request) {
     let url_path = req.uri().path().to_string();
-    if url_path == "/user/login" {
+    if url_path == "/user/login" || url_path == "/user/create" {
         return;
     }
     let auth_token = req.headers().get_one("Authorization");
