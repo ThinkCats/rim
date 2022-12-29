@@ -1,5 +1,5 @@
 use anyhow::Result;
-use rocket::{catch, catchers, fairing::AdHoc, get, http::uri::Origin, routes, Request};
+use rocket::{catch, catchers, fairing::AdHoc, get, http::uri::Origin, post, routes, Request};
 
 use crate::{
     common::{
@@ -17,10 +17,9 @@ use crate::{
 };
 
 pub async fn launch_web() -> Result<(), rocket::Error> {
-    let figment = rocket::Config::figment()
-        .merge(("port", 8000));
+    let figment = rocket::Config::figment().merge(("port", 8000));
     let _rocket = rocket::custom(figment)
-        .mount("/", routes![index, login_need])
+        .mount("/", routes![index, login_need, login_need_post])
         .mount(
             "/api/user",
             routes![user_get, user_create, user_login, user_token],
@@ -66,9 +65,14 @@ fn login_need() -> WebResponse<String> {
     response(None, 401, "login required".into())
 }
 
+#[post("/login/need")]
+fn login_need_post() -> WebResponse<String> {
+    response(None, 401, "login required".into())
+}
+
 fn check_header_token(req: &mut Request) {
     let url_path = req.uri().path().to_string();
-    if url_path == "/user/login" || url_path == "/user/create" {
+    if url_path == "/api/user/login" || url_path == "/api/user/create" {
         return;
     }
     let auth_token = req.headers().get_one("Authorization");

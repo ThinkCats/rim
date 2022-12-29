@@ -44,6 +44,8 @@ pub fn insert_messages(msg_info: &MessageInfo, msg_inboxs: Vec<MessageInbox>) ->
     )
     .expect("insert message inbox error");
 
+    let receiver_uids = msg_inboxs.iter().map(|r| r.receiver_uid).collect::<Vec<u64>>();
+
     for ele in msg_inboxs {
         let chat_list = select_chat_list_by_gu(ele.g_id, ele.receiver_uid);
         match chat_list {
@@ -53,11 +55,13 @@ pub fn insert_messages(msg_info: &MessageInfo, msg_inboxs: Vec<MessageInbox>) ->
             }
             None => {
                 //insert
+                let chat_uid = get_chat_uid(ele.receiver_uid, receiver_uids.clone()).expect("can not find chat list uid");
                 let list = ChatList {
                     id: None,
                     g_id: ele.g_id,
                     u_id: ele.receiver_uid,
                     last_msg_id: msg_id,
+                    chat_uid,
                     update_time: now_time_str(),
                 };
                 let _ = insert_chat_list_with_trans(&mut tx, list);
@@ -68,6 +72,15 @@ pub fn insert_messages(msg_info: &MessageInfo, msg_inboxs: Vec<MessageInbox>) ->
     tx.commit().expect("commit message tx error");
 
     Ok(msg_id)
+}
+
+fn get_chat_uid(recevier_uid: u64, rev_uids: Vec<u64>) -> Option<u64> {
+   for ele in rev_uids {
+       if recevier_uid != ele {
+        return Some(ele);
+       }
+   }
+   None
 }
 
 pub fn select_msg_by_ids(ids: Vec<u64>) -> Result<Vec<MessageInfo>> {
@@ -114,7 +127,7 @@ pub fn select_msg(sql: String) -> Result<Vec<MessageInfo>> {
 
 fn select_chat_list_by_gu(gid: u64, uid: u64) -> Option<ChatList> {
     let sql = format!(
-        "select id,g_id,u_id,last_msg_id,update_time from chat_list where g_id={} and u_id ={} order by update_time desc",
+        "select id,g_id,u_id,last_msg_id,chat_uid,update_time from chat_list where g_id={} and u_id ={} order by update_time desc",
         gid, uid
     );
 
@@ -128,14 +141,14 @@ fn select_chat_list_by_gu(gid: u64, uid: u64) -> Option<ChatList> {
 pub fn select_chat_list_page(query: &ChatListForm) -> Result<Vec<ChatList>> {
     let start_idx = (query.page - 1) * query.size;
     let sql = format!(
-        "select id,g_id,u_id,last_msg_id,update_time  from chat_list where u_id={}
+        "select id,g_id,u_id,last_msg_id,chat_uid,update_time  from chat_list where u_id={}
                       order by update_time desc limit {},{}",
         query.uid, start_idx, query.size
     );
     select_chat_list(sql)
 }
 
-type ChatListRow = (u64, u64, u64, u64, NaiveDateTime);
+type ChatListRow = (u64, u64, u64, u64, u64, NaiveDateTime);
 fn select_chat_list(sql: String) -> Result<Vec<ChatList>> {
     let result: Vec<ChatListRow> = get_conn().query(sql).expect("query chat list error");
     let r = result
@@ -145,7 +158,8 @@ fn select_chat_list(sql: String) -> Result<Vec<ChatList>> {
             g_id: r.1,
             u_id: r.2,
             last_msg_id: r.3,
-            update_time: format_time(r.4),
+            chat_uid: r.4,
+            update_time: format_time(r.5),
         })
         .collect::<Vec<ChatList>>();
     Ok(r)

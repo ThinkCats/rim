@@ -159,6 +159,7 @@ pub struct ChatList {
     pub g_id: u64,
     pub u_id: u64,
     pub last_msg_id: u64,
+    pub chat_uid: u64,
     pub update_time: String,
 }
 

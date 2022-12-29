@@ -22,7 +22,7 @@ pub fn query_chat_list_page(form: &ChatListForm) -> Result<Vec<ChatMessage>> {
     if list.is_empty() {
         return Ok(Vec::new());
     }
-    let chat_messages: Result<Vec<ChatMessage>> = query_chat_message(list);
+    let chat_messages: Result<Vec<ChatMessage>> = query_chat_message(list, true);
     let msgs = chat_messages?;
 
     let mut gids = Vec::new();
@@ -56,7 +56,7 @@ pub fn query_chat_group_msg_history(form: &MessageForm) -> Result<Vec<ChatMessag
         return Ok(Vec::new());
     }
     let chat_list = convert_inbox_to_chat_list(msg_inbox_list);
-    query_chat_message(chat_list)
+    query_chat_message(chat_list, false)
 }
 
 pub fn update_chat_group_read(form: &ChatGroupReadForm) -> Result<bool> {
@@ -71,18 +71,20 @@ fn convert_inbox_to_chat_list(msg_inbox_list: Vec<MessageInbox>) -> Vec<ChatList
             g_id: r.g_id,
             u_id: r.sender_uid,
             last_msg_id: r.m_id.unwrap(),
+            chat_uid: r.receiver_uid,
             update_time: "".into(),
         })
         .collect::<Vec<ChatList>>()
 }
 
-fn query_chat_message(chat_list: Vec<ChatList>) -> Result<Vec<ChatMessage>> {
+fn query_chat_message(chat_list: Vec<ChatList>, is_chat_list: bool) -> Result<Vec<ChatMessage>> {
     let mut gids: Vec<u64> = Vec::new();
     let mut uids: Vec<u64> = Vec::new();
     let mut mids: Vec<u64> = Vec::new();
     for ele in &chat_list {
         gids.push(ele.g_id);
-        uids.push(ele.u_id);
+        let uid = if is_chat_list { ele.chat_uid } else { ele.u_id };
+        uids.push(uid);
         mids.push(ele.last_msg_id);
     }
 
@@ -95,9 +97,10 @@ fn query_chat_message(chat_list: Vec<ChatList>) -> Result<Vec<ChatMessage>> {
             .iter()
             .find(|r| r.id.unwrap() == ele.g_id)
             .expect("group info not found in chat list");
+        let tmp_uid = if is_chat_list { ele.chat_uid } else { ele.u_id };
         let user = user_list
             .iter()
-            .find(|r| r.id.unwrap() == ele.u_id)
+            .find(|r| r.id.unwrap() == tmp_uid)
             .expect("user info not found in chat list");
         let msg = msg_list
             .iter()
