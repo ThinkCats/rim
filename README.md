@@ -3,7 +3,7 @@
 rim is an im server based on tokio-ws and rocket.
 
 ## front-end
-[rim-front](https://github.com/ThinkCats/rim-front)
+[rim-front](https://github.com/ThinkCats/rim-front) , based on react.
 
 ## features
 ### rest
