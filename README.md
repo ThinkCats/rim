@@ -2,6 +2,9 @@
 
 rim is an im server based on tokio-ws and rocket.
 
+## front-end
+[rim-front](https://github.com/ThinkCats/rim-front)
+
 ## features
 ### rest
 * user login and register
@@ -14,7 +17,7 @@ rim is an im server based on tokio-ws and rocket.
 
 ## demo video
 
-[![](https://i2.hdslb.com/bfs/archive/5014732f653b331de3166bbd0eb8157352d985ff.jpg)](https://player.bilibili.com/player.html?bvid=BV1D14y1g7Zy&page=1)
+[![video](https://i2.hdslb.com/bfs/archive/5014732f653b331de3166bbd0eb8157352d985ff.jpg)](https://player.bilibili.com/player.html?bvid=BV1D14y1g7Zy&page=1)
 
 
 ## websocket protocol
