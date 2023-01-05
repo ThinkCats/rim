@@ -2,7 +2,21 @@
 
 rim is an im server based on tokio-ws and rocket.
 
-## protocol
+## features
+### rest
+* user login and register
+* chat group and group user manage
+* chat message manage
+
+### websocket
+* event type: Login,Msg,Read,Heart,Logout,Ack
+
+
+## demo
+<iframe src="//player.bilibili.com/player.html?bvid=BV1D14y1g7Zy&page=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>
+
+
+## websocket protocol
 
 ### struct
 Msg Struct
