@@ -12,8 +12,9 @@ rim is an im server based on tokio-ws and rocket.
 * event type: Login,Msg,Read,Heart,Logout,Ack
 
 
-## demo
-<iframe src="//player.bilibili.com/player.html?bvid=BV1D14y1g7Zy&page=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>
+## demo video
+
+[![](https://i2.hdslb.com/bfs/archive/5014732f653b331de3166bbd0eb8157352d985ff.jpg)](https://player.bilibili.com/player.html?bvid=BV1D14y1g7Zy&page=1)
 
 
 ## websocket protocol
