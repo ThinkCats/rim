@@ -1,10 +1,10 @@
 use rocket::serde::json::Json;
 use rocket::{get, post};
 
-use crate::common::resp::{response, wrap_result, WebResponse};
+use crate::common::resp::{response, wrap_result, WebResponse, wrap_option};
 
 use super::user_model::UserLoginForm;
-use super::user_service::{self, query_user_by_token};
+use super::user_service::{self, query_user_by_token, query_user_by_account};
 use super::{
     user_model::User,
     user_service::{create_user, query_user},
@@ -33,3 +33,9 @@ pub fn user_token(token: String) -> WebResponse<User> {
     let result = query_user_by_token(token);
     response(result, 1001, "token not found".into())
 }
+
+#[get("/search?<account>")]
+pub fn user_search(account: String) -> WebResponse<User> {
+    let result = query_user_by_account(account);
+    wrap_option(result)
+} 

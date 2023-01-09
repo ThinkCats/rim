@@ -37,6 +37,10 @@ pub fn wrap_result<T>(result: Result<T>) -> WebResponse<T> {
     }
 }
 
+pub fn wrap_option<T>(result: Option<T>) -> WebResponse<T> {
+    response(result, 200, "fail".into())
+}
+
 pub fn response<T>(data: Option<T>, code: u32, fail_msg: String) -> WebResponse<T> {
     match data {
         Some(d) => {

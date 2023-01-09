@@ -24,6 +24,10 @@ pub fn query_user(uid: u64) -> Option<User> {
     Some(u[0].clone())
 }
 
+pub fn query_user_by_account(account: String) -> Option<User> {
+    select_user_by_account(account)
+}
+
 pub fn query_user_by_token(token: String) -> Option<User> {
     let user_token = select_user_token_by_token(token);
     if user_token.is_none() {
@@ -75,7 +79,6 @@ pub fn valid_token(token: String) -> (bool, Option<u64>) {
 }
 
 fn create_token(uid: u64) -> String {
-    //TODO check user token existed
     let user_token = select_user_token_by_uid(uid);
     match user_token {
         Some(u) => {

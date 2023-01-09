@@ -11,7 +11,7 @@ use crate::{
     },
     message::message_router::{chat_group_read, chat_list, history},
     user::{
-        user_router::{user_create, user_get, user_login, user_token},
+        user_router::{user_create, user_get, user_login, user_token, user_search},
         user_service::valid_token,
     },
 };
@@ -22,7 +22,7 @@ pub async fn launch_web() -> Result<(), rocket::Error> {
         .mount("/", routes![index, login_need, login_need_post])
         .mount(
             "/api/user",
-            routes![user_get, user_create, user_login, user_token],
+            routes![user_get, user_create, user_login, user_token, user_search],
         )
         .mount(
             "/api/group",
