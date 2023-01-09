@@ -25,7 +25,15 @@ pub fn query_user(uid: u64) -> Option<User> {
 }
 
 pub fn query_user_by_account(account: String) -> Option<User> {
-    select_user_by_account(account)
+    let user = select_user_by_account(account);
+    match user {
+        Some(mut u) => {
+            u.password = Some("".into());
+            u.email = Some("".into());
+            return Some(u);
+        },
+        None => {None},
+    }
 }
 
 pub fn query_user_by_token(token: String) -> Option<User> {
