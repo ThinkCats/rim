@@ -54,6 +54,9 @@ pub fn handle_ws_msg(msg: &MsgEvent, user_channel_map: &UserPeerMap, current_sen
                 handle_read(&msg.body, current_sender);
             }
         }
+        _ => {
+            error!("invalid event type");
+        }
     }
 }
 

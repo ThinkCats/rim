@@ -17,6 +17,7 @@ pub enum EventType {
     Heart,
     Logout,
     Ack,
+    Notify,
 }
 
 #[derive(Serialize, Deserialize, Clone)]

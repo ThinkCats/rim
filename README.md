@@ -1,15 +1,16 @@
 # rim
 
-rim is an im server based on tokio-ws and rocket.
+rim is an im server based on tokio-ws and rocket , writing in rust.
 
 ## front-end
 [rim-front](https://github.com/ThinkCats/rim-front) , based on react.
 
 ## features
-### rest
+
+* single & group chat
 * user login and register
-* chat group and group user manage
-* chat message manage
+* user friend relation
+* chat group management
 
 ### websocket
 * event type: Login,Msg,Read,Heart,Logout,Ack
