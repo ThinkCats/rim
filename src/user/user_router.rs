@@ -1,7 +1,9 @@
+use log::info;
 use rocket::serde::json::Json;
 use rocket::{get, post};
 
 use crate::common::resp::{response, wrap_result, WebResponse, wrap_option};
+use crate::common::store::get_thread_local;
 
 use super::user_model::UserLoginForm;
 use super::user_service::{self, query_user_by_token, query_user_by_account};
@@ -12,6 +14,7 @@ use super::{
 
 #[get("/get?<uid>")]
 pub fn user_get(uid: u64) -> WebResponse<User> {
+    info!("thread local info in req:{:?}", get_thread_local());
     let result = query_user(uid);
     response(result, 1001, "user not found".into())
 }

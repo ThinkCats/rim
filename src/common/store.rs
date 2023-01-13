@@ -11,7 +11,6 @@ pub const GROUP_USER_ROLE_ADMIN: u8 = 2;
 pub const STATUS_TRUE: u8 = 1;
 pub const STATUS_FALSE: u8 = 2;
 
-
 lazy_static! {
     pub static ref MYSQL_URL: String = String::from("mysql://root:12345678@localhost:3306/rim");
     pub static ref DB_POOL: Mutex<Pool> = Mutex::new(Pool::new(MYSQL_URL.as_str()).unwrap());
@@ -21,22 +20,52 @@ pub fn get_conn() -> PooledConn {
     DB_POOL.lock().unwrap().get_conn().unwrap()
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ThreadLocalStore {
     pub token: String,
     pub uid: u64,
 }
 
+impl ThreadLocalStore {
+    pub fn init() -> ThreadLocalStore {
+        ThreadLocalStore {
+            token: "".into(),
+            uid: 0,
+        }
+    }
+}
+
 pub fn add_local_store(token: String, uid: u64) {
     THREAD_LOCAL.with(|r| {
         let mut d = r.borrow_mut();
-        let token_existed = d.iter().any(|t| t.token == token);
-        if !token_existed {
-            d.push(ThreadLocalStore { token, uid });
-        }
+        d.token = token;
+        d.uid = uid;
     });
 }
 
+pub fn get_thread_local() -> ThreadLocalStore {
+    let mut store = ThreadLocalStore::init();
+    THREAD_LOCAL.with(|r| {
+        let d = r.borrow_mut();
+        store = ThreadLocalStore {
+            uid: d.uid,
+            token: d.token.clone(),
+        }
+    });
+    store
+}
+
+// pub fn add_local_store(token: String, uid: u64) {
+//     THREAD_LOCAL.with(|r| {
+//         let mut d = r.borrow_mut();
+//         let token_existed = d.iter().any(|t| t.token == token);
+//         if !token_existed {
+//             d.push(ThreadLocalStore { token, uid });
+//         }
+//     });
+// }
+
 thread_local! {
-   pub static THREAD_LOCAL: RefCell<Vec<ThreadLocalStore>> = RefCell::new(Vec::new());
+//    pub static THREAD_LOCAL: RefCell<Vec<ThreadLocalStore>> = RefCell::new(Vec::new());
+   pub static THREAD_LOCAL: RefCell<ThreadLocalStore> = RefCell::new(ThreadLocalStore::init());
 }
