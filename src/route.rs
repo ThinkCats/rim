@@ -6,12 +6,13 @@ use crate::{
         resp::{json_fail, response, WebResponse},
         store::add_local_store,
     },
+    friend::friend_router::friend_add,
     group::group_router::{
         group_create, group_get, group_update, group_user_change, group_user_get,
     },
     message::message_router::{chat_group_read, chat_list, history},
     user::{
-        user_router::{user_create, user_get, user_login, user_token, user_search},
+        user_router::{user_create, user_get, user_login, user_search, user_token},
         user_service::valid_token,
     },
 };
@@ -35,6 +36,7 @@ pub async fn launch_web() -> Result<(), rocket::Error> {
             ],
         )
         .mount("/api/message", routes![chat_list, history, chat_group_read])
+        .mount("/api/friend", routes![friend_add])
         .attach(token_checker_adhoc())
         .register("/", catchers![not_found, server_error])
         .launch()
