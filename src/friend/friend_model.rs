@@ -2,10 +2,21 @@ use serde::{Deserialize, Serialize};
 
 use crate::common::time::now_time_str;
 
+pub const FRIEND_STATUS_APPLY: u8 = 0;
+pub const FRIEND_STATUS_CONFIRM: u8 = 1;
+pub const FRIEND_STATUS_REJECT: u8 = 2;
+
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct FriendAddForm {
     pub uid: u64,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct FriendStatusModifyForm{
+    pub uid: u64,
+    pub status: u8,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
