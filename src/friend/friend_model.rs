@@ -15,9 +15,24 @@ pub struct FriendAddForm {
 
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(crate = "rocket::serde")]
-pub struct FriendStatusModifyForm{
+pub struct FriendStatusModifyForm {
     pub uid: u64,
     pub status: u8,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
+#[serde(crate = "rocket::serde")]
+pub struct FriendQueryForm {
+    pub uid: u64,
+    //TODO page optional
+    pub page: u32,
+    pub size: u32,
+}
+
+impl FriendQueryForm {
+    pub fn idx(&self) -> u32 {
+        (self.page - 1) * self.size
+    } 
 }
 
 #[derive(Serialize, Deserialize, Clone)]
