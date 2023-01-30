@@ -5,9 +5,9 @@ use super::{
     friend_model::{FriendAddForm, FriendRelation, FriendStatusModifyForm, FRIEND_STATUS_APPLY},
 };
 
-pub fn add_friend(uid: u64, add_form: &FriendAddForm) -> Result<bool> {
+pub fn add_friend(add_form: &FriendAddForm) -> Result<bool> {
     let status = FRIEND_STATUS_APPLY;
-    let friend = FriendRelation::init(uid, add_form.uid, status);
+    let friend = FriendRelation::init(add_form.uid.unwrap(), add_form.fid, status);
     insert_friend_rel(&friend)
 }
 

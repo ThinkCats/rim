@@ -9,7 +9,8 @@ pub const FRIEND_STATUS_REJECT: u8 = 2;
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct FriendAddForm {
-    pub uid: u64,
+    pub fid: u64,
+    pub uid: Option<u64>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -33,12 +34,12 @@ pub struct FriendRelation {
 }
 
 impl FriendRelation {
-    pub fn init(uid: u64, f_uid: u64, status: u8) -> FriendRelation {
+    pub fn init(uid: u64, fid: u64, status: u8) -> FriendRelation {
         let now = now_time_str();
         FriendRelation {
             id: None,
             uid,
-            fid: f_uid,
+            fid,
             status,
             create_time: now.clone(),
             update_time: now.clone(),
