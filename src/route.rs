@@ -6,7 +6,7 @@ use crate::{
         resp::{json_fail, response, WebResponse},
         store::add_local_store,
     },
-    friend::friend_router::friend_add,
+    friend::friend_router::{friend_add, friend_list},
     group::group_router::{
         group_create, group_get, group_update, group_user_change, group_user_get,
     },
@@ -36,7 +36,7 @@ pub async fn launch_web() -> Result<(), rocket::Error> {
             ],
         )
         .mount("/api/message", routes![chat_list, history, chat_group_read])
-        .mount("/api/friend", routes![friend_add])
+        .mount("/api/friend", routes![friend_add, friend_list])
         .attach(token_checker_adhoc())
         .register("/", catchers![not_found, server_error])
         .launch()

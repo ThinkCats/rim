@@ -1,11 +1,17 @@
-use rocket::{post, serde::json::Json, get};
+use rocket::{get, post, serde::json::Json};
 
-use crate::{common::{
-    resp::{wrap_result, WebResponse},
-    store::get_thread_local,
-}, user::user_model::User};
+use crate::{
+    common::{
+        resp::{wrap_result, WebResponse},
+        store::get_thread_local,
+    },
+    user::user_model::User,
+};
 
-use super::{friend_model::FriendAddForm, friend_service::add_friend};
+use super::{
+    friend_model::FriendAddForm,
+    friend_service::{add_friend, list_friend},
+};
 
 #[post("/add", data = "<add_form>")]
 pub fn friend_add(add_form: Json<FriendAddForm>) -> WebResponse<bool> {
@@ -17,7 +23,10 @@ pub fn friend_add(add_form: Json<FriendAddForm>) -> WebResponse<bool> {
     wrap_result(result)
 }
 
-#[get("/list?<uid>")]
-pub fn friend_list(uid: u64) -> WebResponse<User> {
-    todo!()
+#[get("/list")]
+pub fn friend_list() -> WebResponse<Vec<User>> {
+    let store = get_thread_local();
+    let uid = store.uid;
+    let result = list_friend(uid);
+    wrap_result(result)
 }
