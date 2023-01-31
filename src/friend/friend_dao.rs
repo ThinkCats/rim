@@ -4,7 +4,7 @@ use mysql::prelude::Queryable;
 
 use crate::common::{store::get_conn, time::format_time};
 
-use super::friend_model::{FriendQueryForm, FriendRelation};
+use super::friend_model::{FriendQueryForm, FriendRelation, FriendStatusModifyForm};
 
 pub fn insert_friend_rel(friend: &FriendRelation) -> Result<bool> {
     let mut conn = get_conn();
@@ -12,6 +12,22 @@ pub fn insert_friend_rel(friend: &FriendRelation) -> Result<bool> {
     let _: Vec<u64> = conn
         .exec(sql, (&friend.uid, &friend.fid, &friend.status))
         .expect("insert friend rel error");
+    Ok(true)
+}
+
+pub fn update_friend_status(form: &FriendStatusModifyForm) -> Result<bool> {
+    let sql = "update friend_rel set status= ? where uid = ? and f_id = ?";
+    let _: Vec<u64> = get_conn()
+        .exec(sql, (&form.status, &form.uid, &form.fid))
+        .expect("update friend status error");
+    Ok(true)
+}
+
+pub fn delete_friend_status(form: &FriendStatusModifyForm) -> Result<bool> {
+    let sql = "delete from friend_rel where uid = ? and f_id = ?";
+    let _: Vec<u64> = get_conn()
+        .exec(sql, (&form.uid, &form.fid))
+        .expect("update friend status error");
     Ok(true)
 }
 

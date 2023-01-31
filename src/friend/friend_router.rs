@@ -9,8 +9,9 @@ use crate::{
 };
 
 use super::{
-    friend_model::FriendAddForm,
-    friend_service::{add_friend, list_friend},
+    friend_dao::update_friend_status,
+    friend_model::{FriendAddForm, FriendStatusModifyForm},
+    friend_service::{add_friend, list_friend, modify_friend_status},
 };
 
 #[post("/add", data = "<add_form>")]
@@ -28,5 +29,15 @@ pub fn friend_list(status: u8) -> WebResponse<Vec<User>> {
     let store = get_thread_local();
     let uid = store.uid;
     let result = list_friend(uid, status);
+    wrap_result(result)
+}
+
+#[post("/status/modify", data = "<form>")]
+pub fn friend_status_modify(form: Json<FriendStatusModifyForm>) -> WebResponse<bool> {
+    let store = get_thread_local();
+    let uid = store.uid;
+    let mut new_form = form.clone();
+    new_form.uid = Some(uid);
+    let result = modify_friend_status(&new_form);
     wrap_result(result)
 }

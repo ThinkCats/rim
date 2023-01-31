@@ -1,10 +1,13 @@
-use anyhow::{Result, Ok};
-use rocket::response::status;
+use anyhow::{Ok, Result};
+use log::info;
 
-use crate::user::{user_dao::select_user_by_uids, user_model::User};
+use crate::{
+    friend::friend_dao::delete_friend_status,
+    user::{user_dao::select_user_by_uids, user_model::User},
+};
 
 use super::{
-    friend_dao::{insert_friend_rel, select_friend},
+    friend_dao::{insert_friend_rel, select_friend, update_friend_status},
     friend_model::{
         FriendAddForm, FriendQueryForm, FriendRelation, FriendStatusModifyForm, FRIEND_STATUS_APPLY,
     },
@@ -31,6 +34,19 @@ pub fn list_friend(uid: u64, status: u8) -> Result<Vec<User>> {
     select_user_by_uids(uids)
 }
 
-pub fn modify_friend_status(modify_form: &FriendStatusModifyForm) -> Result<bool> {
-    todo!()
+pub fn modify_friend_status(form: &FriendStatusModifyForm) -> Result<bool> {
+    let status = form.status;
+    let valid_status = form.valid_friend_status(status);
+    info!("status valid:{}", valid_status);
+    if !valid_status {
+        return Ok(false);
+    }
+
+    let is_reject = form.is_reject(status);
+    if is_reject {
+        return delete_friend_status(form);
+    }
+
+    //do nothing when friend rel is deleted
+    update_friend_status(form)
 }

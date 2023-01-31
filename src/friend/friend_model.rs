@@ -16,8 +16,21 @@ pub struct FriendAddForm {
 #[derive(Serialize, Deserialize, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct FriendStatusModifyForm {
-    pub uid: u64,
+    pub uid: Option<u64>,
+    pub fid: u64,
     pub status: u8,
+}
+
+impl FriendStatusModifyForm {
+    pub fn valid_friend_status(&self, status: u8) -> bool {
+        status == FRIEND_STATUS_APPLY
+            || status == FRIEND_STATUS_CONFIRM
+            || status == FRIEND_STATUS_REJECT
+    }
+
+    pub fn is_reject(&self, status: u8) -> bool {
+        status == FRIEND_STATUS_REJECT
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone)]
