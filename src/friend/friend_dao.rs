@@ -17,8 +17,8 @@ pub fn insert_friend_rel(friend: &FriendRelation) -> Result<bool> {
 
 type FriendRow = (u64, u64, u64, u8, NaiveDateTime, NaiveDateTime);
 pub fn select_friend(query: &FriendQueryForm) -> Result<Vec<FriendRelation>> {
-    //TODO query all, not page
-    let sql = format!("select id, uid,f_id,status,create_time,update_time from friend_rel where uid = {} order by id asc", query.uid);
+    let sql = format!("select id, uid,f_id,status,create_time,update_time from friend_rel where uid = {} and status = {}",
+     query.uid, query.status);
     let result: Vec<FriendRow> = get_conn().query(sql).expect("select friend error");
     let r = result
         .iter()

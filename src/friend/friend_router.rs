@@ -23,10 +23,10 @@ pub fn friend_add(add_form: Json<FriendAddForm>) -> WebResponse<bool> {
     wrap_result(result)
 }
 
-#[get("/list")]
-pub fn friend_list() -> WebResponse<Vec<User>> {
+#[get("/list?<status>")]
+pub fn friend_list(status: u8) -> WebResponse<Vec<User>> {
     let store = get_thread_local();
     let uid = store.uid;
-    let result = list_friend(uid);
+    let result = list_friend(uid, status);
     wrap_result(result)
 }

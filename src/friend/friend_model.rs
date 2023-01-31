@@ -24,6 +24,7 @@ pub struct FriendStatusModifyForm {
 #[serde(crate = "rocket::serde")]
 pub struct FriendQueryForm {
     pub uid: u64,
+    pub status: u8,
     pub page: Option<u32>,
     pub size: Option<u32>,
 }

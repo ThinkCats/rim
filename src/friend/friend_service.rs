@@ -1,4 +1,5 @@
-use anyhow::Result;
+use anyhow::{Result, Ok};
+use rocket::response::status;
 
 use crate::user::{user_dao::select_user_by_uids, user_model::User};
 
@@ -15,13 +16,17 @@ pub fn add_friend(add_form: &FriendAddForm) -> Result<bool> {
     insert_friend_rel(&friend)
 }
 
-pub fn list_friend(uid: u64) -> Result<Vec<User>> {
+pub fn list_friend(uid: u64, status: u8) -> Result<Vec<User>> {
     let query = FriendQueryForm {
         uid,
+        status,
         page: None,
         size: None,
     };
     let friend_rels = select_friend(&query)?;
+    if friend_rels.is_empty() {
+        return Ok(Vec::new());
+    }
     let uids = friend_rels.iter().map(|r| r.fid).collect();
     select_user_by_uids(uids)
 }
