@@ -1,6 +1,12 @@
-# rim
+<div align="center">
 
-rim 是一个使用rust编写的im服务端。
+# rim 
+![GitHub branch checks state](https://img.shields.io/github/checks-status/ThinkCats/rim/master)
+![GitHub](https://img.shields.io/github/license/ThinkCats/rim)
+
+</div>
+
+rim 是一个使用rust编写的im服务端。 [English](./README_en.md)
 
 
 ## 前端展示
