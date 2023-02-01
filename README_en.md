@@ -1,32 +1,32 @@
 # rim
 
-rim 是一个使用rust编写的im服务端。
+rim is an im server based on tokio-ws and rocket , writing in rust.
+
+## front-end
+[rim-front](https://github.com/ThinkCats/rim-front) , based on react.
+
+## features
+
+* single & group chat
+* user login and register
+* user friend relation
+* chat group management
+
+### websocket
+* event type: Login,Msg,Read,Heart,Logout,Ack
+
+## run
+```
+cargo run
+```
 
 
-## 前端展示
-[rim-front](https://github.com/ThinkCats/rim-front) , 使用react编写，仅做演示用.
-
-## 功能列表
-
-* 群聊 & 单聊功能
-* 用户的注册/登录
-* 好友关系
-* 消息的服务端存储
-* 多消息类型格式支持
-
-
-## demo 视频
+## demo video
 
 [![video](https://i2.hdslb.com/bfs/archive/5014732f653b331de3166bbd0eb8157352d985ff.jpg)](https://player.bilibili.com/player.html?bvid=BV1D14y1g7Zy&page=1)
 
-> 😄好友关系前端暂未实现
 
-
-## rest api 文档
-[api doc](doc/RIM.html)
-
-
-## websocket 消息体协议
+## websocket protocol
 
 ### struct
 Msg Struct

@@ -9,7 +9,6 @@ use crate::{
 };
 
 use super::{
-    friend_dao::update_friend_status,
     friend_model::{FriendAddForm, FriendStatusModifyForm},
     friend_service::{add_friend, list_friend, modify_friend_status},
 };
