@@ -3,6 +3,7 @@
 # rim 
 ![GitHub branch checks state](https://img.shields.io/github/checks-status/ThinkCats/rim/master)
 ![GitHub](https://img.shields.io/github/license/ThinkCats/rim)
+[![996.icu](https://img.shields.io/badge/link-996.icu-red.svg)](https://996.icu)
 
 </div>
 
